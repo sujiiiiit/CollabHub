@@ -7,7 +7,7 @@ import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { setLoading, setUser } from "@/lib/slices/userSlice";
+import { setLoading } from "@/lib/slices/userSlice";
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 function UserAuthFormLogin({ className, ...props }: UserAuthFormProps) {
