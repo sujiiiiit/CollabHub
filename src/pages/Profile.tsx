@@ -13,7 +13,7 @@ const Profile: React.FC = () => {
     const fetchUser = async () => {
       dispatch(setLoading(true));
       try {
-        const response = await axios.get("http://localhost:5000/profile", {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/profile`, {
           withCredentials: true,
         });
         dispatch(setUser(response.data));
