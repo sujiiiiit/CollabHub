@@ -31,12 +31,12 @@ const Header: React.FC = () => {
   }, [dispatch]);
 
   const handleLogin = () => {
-    window.open("http://localhost:5000/auth/github", "_self");
+    window.open(import.meta.env.VITE_SERVER_URL + "/auth/github", "_self");
   };
 
   const handleLogout = () => {
     axios
-      .post("http://localhost:5000/auth/logout", {}, { withCredentials: true })
+      .post(import.meta.env.VITE_SERVER_URL + "/auth/logout", {}, { withCredentials: true })
       .then(() => {
         window.location.reload();
       });
