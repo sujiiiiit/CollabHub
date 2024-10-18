@@ -1,33 +1,23 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 
-interface User {
-  username: string;
-  email: string;
-  // Add other user properties here
-}
-
-interface UserState {
-  user: User | null;
-  loading: boolean;
-}
-
-const initialState: UserState = {
-  user: null,
-  loading: false,
-};
+export const fetchUser = createAsyncThunk('user/fetchUser', async () => {
+  const response = await axios.get('http://localhost:5000/auth/user', { withCredentials: true });
+  return response.data;
+});
 
 const userSlice = createSlice({
   name: 'user',
-  initialState,
-  reducers: {
-    setUser(state, action: PayloadAction<User | null>) {
+  initialState: {
+    user: null,
+    status: 'idle',
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(fetchUser.fulfilled, (state, action) => {
       state.user = action.payload;
-    },
-    setLoading(state, action: PayloadAction<boolean>) {
-      state.loading = action.payload;
-    },
+    });
   },
 });
 
-export const { setUser, setLoading } = userSlice.actions;
 export default userSlice.reducer;

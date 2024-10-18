@@ -1,13 +1,22 @@
 /* Geist fonts  */
-/* Light */
+
+/* Thin */
 @font-face {
     font-family: 'Geist';
     src: url('/fonts/Geist/Geist-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+}
+
+/* Light */
+@font-face {
+    font-family: 'Geist';
+    src: url('/fonts/Geist/Geist-Light.ttf') format('truetype');
     font-weight: 300;
     font-style: normal;
 }
 
-/* Normal */
+/* Regular */
 @font-face {
     font-family: 'Geist';
     src: url('/fonts/Geist/Geist-Regular.ttf') format('truetype');
@@ -15,7 +24,23 @@
     font-style: normal;
 }
 
-/* Bold  */
+/* Medium */
+@font-face {
+    font-family: 'Geist';
+    src: url('/fonts/Geist/Geist-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+/* SemiBold */
+@font-face {
+    font-family: 'Geist';
+    src: url('/fonts/Geist/Geist-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+/* Bold */
 @font-face {
     font-family: 'Geist';
     src: url('/fonts/Geist/Geist-Bold.ttf') format('truetype');
@@ -23,12 +48,19 @@
     font-style: normal;
 }
 
-
-
+/* ExtraBold */
 @font-face {
-    font-family: 'GeistMono';
-    src: url('/fonts/Geist/GeistMonoVF.ttf') format('truetype');
-    font-weight: 400;
+    font-family: 'Geist';
+    src: url('/fonts/Geist/Geist-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+/* Black */
+@font-face {
+    font-family: 'Geist';
+    src: url('/fonts/Geist/Geist-Black.ttf') format('truetype');
+    font-weight: 900;
     font-style: normal;
 }
 

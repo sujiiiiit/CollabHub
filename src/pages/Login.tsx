@@ -1,4 +1,4 @@
-import UserAuthFormLogin from "./components/user-auth-form";
+import UserAuthFormLogin from "../components/user-auth-form";
 
 export default function AuthenticationPage() {
   return (
