@@ -3,12 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   :root {
-
-    --ten: #00A264;
-    --ten2: #4CD681;
+    --ten: #00a264;
+    --ten2: #4cd681;
     --thirty: rgb(0, 0, 0);
     --sixty: rgb(255, 255, 255);
     --background: 0 0% 100%;
@@ -17,7 +15,7 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --primary: 143, 63%, 57%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -66,7 +64,6 @@
   }
 }
 
-
 @layer base {
   * {
     @apply border-border;
@@ -81,10 +78,22 @@ body {
   font-family: "Geist", sans-serif;
 }
 
-.font-qui{
+.font-qui {
   font-family: "";
 }
 
-body, div, h1, h2, h3, h4, h5, h6, p{
-  color:#20262e;
+body,
+div,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  color: #20262e;
+}
+
+.dis-none {
+  display: none !important;
 }

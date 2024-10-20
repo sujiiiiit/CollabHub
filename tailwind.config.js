@@ -69,6 +69,9 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "customCreateBtn-animation":{
+          to :{transform: "translateX(-25%);"}
+        }
       },
       screens: {
         xs: {

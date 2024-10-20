@@ -1,47 +1,20 @@
-import Header from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Filters, { CategoryFilter } from "@/pages/components/filter";
 import ForYou from "@/pages/components/forYou";
-import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
-
-
-const Home: React.FC=() => {
-  const [totalHeight, setTotalHeight] = useState<number>(0);
-
-  const roleSearchHeightRef = useRef<HTMLHeadingElement>(null);
-  const tabsHeightRef = useRef<HTMLHeadingElement>(null);
-
-  const handleHeaderHeight = (height: number) => {
-    setTotalHeight((prevHeight) => prevHeight + height);
-  };
-
-  useEffect(() => {
-    if (roleSearchHeightRef.current && tabsHeightRef.current) {
-      const roleSearchHeight = roleSearchHeightRef.current.clientHeight;
-      const tabsHeight = tabsHeightRef.current.clientHeight;
-      setTotalHeight(roleSearchHeight + tabsHeight);
-    }
-  }, [roleSearchHeightRef.current, tabsHeightRef.current]); // Add refs as dependencies
-  
-
-  console.log(totalHeight);
-
+const Home: React.FC = () => {
   return (
-    <div className="relative w-full h-dvh">
-      <Header onHeightChange={handleHeaderHeight} />
+    <>
       {/* max-w-6xl */}
       <div className="sticky  mx-auto w-full">
         {/* search section  */}
-        <div
-          ref={roleSearchHeightRef}
-          id="roleSearch"
-          className="w-full flex justify-center px-2 py-5"
-        >
+        <div id="roleSearch" className="w-full flex justify-center px-2 py-5">
           <div
             className="w-full flex items-center justify-center gap-[2px]
         "
           >
-            <div className="w-full max-w-md flex bg-gray-100 justify-start items-center pl-4 px-3 py-2.5  rounded-s-full gap-2">
+            <div className=" w-full max-w-md flex bg-gray-100 justify-start items-center pl-4 px-3 py-2.5  rounded-s-full gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -52,7 +25,7 @@ const Home: React.FC=() => {
                 <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
               </svg>
               <input
-                className="w-full max-w-md outline-none bg-transparent placeholder:text-black/70"
+                className=" w-full max-w-md outline-none bg-transparent placeholder:text-black/70"
                 type="text"
                 placeholder="Find your perfect role "
               />
@@ -77,37 +50,52 @@ const Home: React.FC=() => {
         </div>
 
         {/* tabs section  */}
-        <Tabs id="homeTabs" defaultValue="for_you">
-          <div className="sticky w-full border-b flex justify-center" ref={tabsHeightRef}>
-            <TabsList className="m-auto" >
-              <TabsTrigger value="for_you">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  fill="#000000"
-                  viewBox="0 0 256 256"
-                >
-                  <path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z"></path>
-                </svg>{" "}
-                For you
-              </TabsTrigger>
+        <Tabs id="homeTabs" defaultValue="search">
+          <div className="sticky w-full border-b flex justify-center">
+            <TabsList className="m-auto">
               <TabsTrigger value="search">Search</TabsTrigger>
               <TabsTrigger value="your_activity">Your activity</TabsTrigger>
             </TabsList>
           </div>
           <div className="w-full max-w-6xl m-auto p-4 relative">
-            <TabsContent value="for_you">
-              <ForYou totalHeight={totalHeight}/>
+            <TabsContent value="search">
+              <div className="flex items-center justify-start gap-3">
+                <Filters />
+
+                <CategoryFilter />
+              </div>
+
+              <ForYou />
             </TabsContent>
-            <TabsContent value="search">Change your password here.</TabsContent>
             <TabsContent value="your_activity">
               Change your password here.
             </TabsContent>
           </div>
         </Tabs>
       </div>
-    </div>
+      <button className="fixed bottom-5 right-5 flex justify-center items-center">
+        <Link
+          to={"/create"}
+          className="flex w-full cursor-pointer text-white mx-auto relative no-underline font-semibold rounded-full overflow-hidden p-[3px] isolate before:content-[''] before:absolute before:top-0 before:left-0 before:w-[400%] before:h-full before:bg-[linear-gradient(115deg,#4fcf70,#fad648,#a767e5,#12bcfe,#44ce7b)] before:bg-[length:25%_100%] before:animate-[customCreateBtn-animation_3s_linear_infinite]  before:transition-[transform] before:duration-2000 before:ease-out before:animate-running before:duration-[3s] before:translate-x-0  before:translate-y-0"
+        >
+          <span
+            className="relative flex items-center justify-center gap-2 w-full py-2 px-6 text-base bg-black rounded-full h-full
+"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="#fff"
+              viewBox="0 0 256 256"
+            >
+              <path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"></path>
+            </svg>
+            <span>Create a role</span>
+          </span>
+        </Link>
+      </button>
+    </>
   );
 };
 
