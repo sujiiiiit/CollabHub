@@ -1,14 +1,42 @@
 import Header from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ForYou from "@/pages/components/forYou";
-export default function Home() {
+import { useEffect, useRef, useState } from "react";
+
+
+
+const Home: React.FC=() => {
+  const [totalHeight, setTotalHeight] = useState<number>(0);
+
+  const roleSearchHeightRef = useRef<HTMLHeadingElement>(null);
+  const tabsHeightRef = useRef<HTMLHeadingElement>(null);
+
+  const handleHeaderHeight = (height: number) => {
+    setTotalHeight((prevHeight) => prevHeight + height);
+  };
+
+  useEffect(() => {
+    if (roleSearchHeightRef.current && tabsHeightRef.current) {
+      const roleSearchHeight = roleSearchHeightRef.current.clientHeight;
+      const tabsHeight = tabsHeightRef.current.clientHeight;
+      setTotalHeight(roleSearchHeight + tabsHeight);
+    }
+  }, [roleSearchHeightRef.current, tabsHeightRef.current]); // Add refs as dependencies
+  
+
+  console.log(totalHeight);
+
   return (
-    <>
-      <Header />
+    <div className="relative w-full h-dvh">
+      <Header onHeightChange={handleHeaderHeight} />
       {/* max-w-6xl */}
-      <div className=" mx-auto w-full">
+      <div className="sticky  mx-auto w-full">
         {/* search section  */}
-        <div className="w-full flex justify-center px-2 py-5">
+        <div
+          ref={roleSearchHeightRef}
+          id="roleSearch"
+          className="w-full flex justify-center px-2 py-5"
+        >
           <div
             className="w-full flex items-center justify-center gap-[2px]
         "
@@ -49,9 +77,9 @@ export default function Home() {
         </div>
 
         {/* tabs section  */}
-        <Tabs defaultValue="for_you">
-          <div className="w-full border-b flex justify-center">
-            <TabsList className="m-auto">
+        <Tabs id="homeTabs" defaultValue="for_you">
+          <div className="sticky w-full border-b flex justify-center" ref={tabsHeightRef}>
+            <TabsList className="m-auto" >
               <TabsTrigger value="for_you">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -68,9 +96,9 @@ export default function Home() {
               <TabsTrigger value="your_activity">Your activity</TabsTrigger>
             </TabsList>
           </div>
-          <div className="w-full max-w-6xl m-auto p-4">
+          <div className="w-full max-w-6xl m-auto p-4 relative">
             <TabsContent value="for_you">
-              <ForYou />
+              <ForYou totalHeight={totalHeight}/>
             </TabsContent>
             <TabsContent value="search">Change your password here.</TabsContent>
             <TabsContent value="your_activity">
@@ -79,6 +107,8 @@ export default function Home() {
           </div>
         </Tabs>
       </div>
-    </>
+    </div>
   );
-}
+};
+
+export default Home;
