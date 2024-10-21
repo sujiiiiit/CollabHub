@@ -87,7 +87,7 @@ export default function MyForm() {
                     values={field.value}
                     onValuesChange={field.onChange}
                     loop
-                    className="max-w-xs"
+                    className=""
                   >
                     <MultiSelectorTrigger>
                       <MultiSelectorInput placeholder="Select languages" />
@@ -144,7 +144,7 @@ export default function MyForm() {
                     values={field.value}
                     onValuesChange={field.onChange}
                     loop
-                    className="max-w-xs"
+                    className="!w-full"
                   >
                     <MultiSelectorTrigger>
                       <MultiSelectorInput placeholder="Select roles" />
@@ -182,3 +182,6 @@ export default function MyForm() {
     </Form>
   );
 }
+
+
+
