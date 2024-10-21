@@ -2,10 +2,10 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
@@ -19,9 +19,8 @@ module.exports = {
       padding: "2rem",
       screens: {
         "2xl": "1400px",
-        "xs":"600px"
+        xs: "600px",
       },
-    
     },
     extend: {
       colors: {
@@ -59,7 +58,7 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
-      
+
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -69,9 +68,13 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "customCreateBtn-animation":{
-          to :{transform: "translateX(-25%);"}
-        }
+        "customCreateBtn-animation": {
+          to: { transform: "translateX(-25%);" },
+        },
+        shimmer: {
+          from: { "background-position": "top left" },
+          to: { "background-position": "top right" },
+        },
       },
       screens: {
         xs: {
@@ -84,10 +87,9 @@ module.exports = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "shimmer": "shimmer 1s infinite",
       },
-      
-      
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+};

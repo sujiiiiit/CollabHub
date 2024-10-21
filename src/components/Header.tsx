@@ -98,6 +98,7 @@ const Header: React.FC = () => {
              </AvatarFallback>
            </Avatar>
           ) : user ? (
+            
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <Avatar className="outline-0 focus-visible:outline-none">

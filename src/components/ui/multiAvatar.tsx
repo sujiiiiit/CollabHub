@@ -32,7 +32,7 @@ const variants = cva(
 );
 
 const AvatarCircles = React.forwardRef<HTMLButtonElement, AvatarCirclesProps>(
-  ({ numPeople = 0, size, className, avatarUrls }, ref) => {
+  ({ numPeople = 0, size, className, avatarUrls }, _ref) => {
     return (
       <div
         className={cn("z-10 flex -space-x-3 rtl:space-x-reverse", className)}

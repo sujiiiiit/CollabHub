@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import * as Slider from '@radix-ui/react-slider'
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"

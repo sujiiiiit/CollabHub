@@ -1,7 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Filters, { CategoryFilter } from "@/pages/components/filter";
 import ForYou from "@/pages/components/forYou";
-import { Link } from "react-router-dom";
 
 const Home: React.FC = () => {
   return (
@@ -51,10 +50,11 @@ const Home: React.FC = () => {
 
         {/* tabs section  */}
         <Tabs id="homeTabs" defaultValue="search">
-          <div className="sticky w-full border-b flex justify-center">
+          <div className="relative w-full border-b flex justify-center">
             <TabsList className="m-auto">
               <TabsTrigger value="search">Search</TabsTrigger>
               <TabsTrigger value="your_activity">Your activity</TabsTrigger>
+             
             </TabsList>
           </div>
           <div className="w-full max-w-6xl m-auto p-4 relative">
@@ -70,10 +70,11 @@ const Home: React.FC = () => {
             <TabsContent value="your_activity">
               Change your password here.
             </TabsContent>
+           
           </div>
         </Tabs>
       </div>
-      <button className="fixed bottom-5 right-5 flex justify-center items-center">
+      {/* <button className="fixed bottom-5 right-5 flex justify-center items-center">
         <Link
           to={"/create"}
           className="flex w-full cursor-pointer text-white mx-auto relative no-underline font-semibold rounded-full overflow-hidden p-[3px] isolate before:content-[''] before:absolute before:top-0 before:left-0 before:w-[400%] before:h-full before:bg-[linear-gradient(115deg,#4fcf70,#fad648,#a767e5,#12bcfe,#44ce7b)] before:bg-[length:25%_100%] before:animate-[customCreateBtn-animation_3s_linear_infinite]  before:transition-[transform] before:duration-2000 before:ease-out before:animate-running before:duration-[3s] before:translate-x-0  before:translate-y-0"
@@ -94,7 +95,7 @@ const Home: React.FC = () => {
             <span>Create a role</span>
           </span>
         </Link>
-      </button>
+      </button> */}
     </>
   );
 };
