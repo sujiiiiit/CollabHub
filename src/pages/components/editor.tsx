@@ -1,157 +1,283 @@
-'use client'
+"use client";
+import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  MultiSelector,
+  MultiSelectorContent,
+  MultiSelectorInput,
+  MultiSelectorItem,
+  MultiSelectorList,
+  MultiSelectorTrigger,
+} from "@/components/ui/multi-select";
+import { Switch } from "@/components/ui/switch";
+import Blocknote from "@/pages/components/edit";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Label } from "@/components/ui/label";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
-import React, { useMemo, useCallback } from 'react'
-import { createEditor, Descendant, BaseEditor, Editor, Transforms } from 'slate'
-import { Slate, Editable, withReact, useSlate, ReactEditor } from 'slate-react'
-import { withHistory } from 'slate-history'
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Bold, Italic, Underline, List, ListOrdered } from 'lucide-react'
+// Schema definition
+const formSchema = z.object({
+  name_1498371116: z.string(),
+  name_6998689863: z.array(z.string()).nonempty(),
+  name_3377255024: z.boolean(),
+  name_0160577085: z.array(z.string()).nonempty(),
+  address: z.string().nonempty(),
+});
 
-// Custom types for the editor elements and text
-type CustomElement = { type: 'paragraph' | 'list-item' | 'numbered-list' | 'bulleted-list'; children: CustomText[] }
-type CustomText = { text: string; bold?: boolean; italic?: boolean; underline?: boolean }
+// Combobox component
+const frameworks = [
+  { value: "remote", label: "Remote" },
+  { value: "sveltekit", label: "SvelteKit" },
+];
 
-declare module 'slate' {
-  interface CustomTypes {
-    Editor: BaseEditor & ReactEditor
-    Element: CustomElement
-    Text: CustomText
-  }
-}
-
-// Initial content for the editor
-const initialValue: Descendant[] = [
-  {
-    type: 'paragraph',
-    children: [{ text: 'Start typing your document here...' }],
-  },
-]
-
-// Button component for the toolbar
-const ToolbarButton = ({ format, icon: Icon, tooltip }: { format: string; icon: React.ElementType; tooltip: string }) => {
-  const editor = useSlate()
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            onMouseDown={(event) => {
-              event.preventDefault()
-              toggleFormat(editor, format)
-            }}
-          >
-            <Icon className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )
-}
-
-// Toggling the formatting on or off (bold, italic, underline)
-const toggleFormat = (editor: ReactEditor, format: string) => {
-  const isActive = isFormatActive(editor, format)
-  if (isActive) {
-    Editor.removeMark(editor, format)
-  } else {
-    Editor.addMark(editor, format, true)
-  }
-}
-
-// Checking if the format is active (bold, italic, underline)
-const isFormatActive = (editor: ReactEditor, format: string) => {
-  const marks = Editor.marks(editor)
-  return marks ? (marks as Record<string, boolean>)[format] === true : false
-}
-
-// Rendering different elements (paragraph, lists)
-const Element = ({ attributes, children, element }: { attributes: any; children: React.ReactNode; element: CustomElement }) => {
-  switch (element.type) {
-    case 'bulleted-list':
-      return <ul {...attributes}>{children}</ul>
-    case 'numbered-list':
-      return <ol {...attributes}>{children}</ol>
-    case 'list-item':
-      return <li {...attributes}>{children}</li>
-    case 'paragraph':
-    default:
-      return <p {...attributes}>{children}</p>
-  }
-}
-
-// Rendering leaf nodes with styles (bold, italic, underline)
-const Leaf = ({ attributes, children, leaf }: { attributes: any; children: React.ReactNode; leaf: CustomText }) => {
-  if (leaf.bold) {
-    children = <strong>{children}</strong>
-  }
-  if (leaf.italic) {
-    children = <em>{children}</em>
-  }
-  if (leaf.underline) {
-    children = <u>{children}</u>
-  }
-  return <span {...attributes}>{children}</span>
-}
-
-export default function AdvancedDocumentEditor() {
-  const editor = useMemo(() => withHistory(withReact(createEditor())), [])
-
-  const renderElement = useCallback((props: any) => <Element {...props} />, [])
-  const renderLeaf = useCallback((props: any) => <Leaf {...props} />, [])
-
-  const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    const text = event.clipboardData?.getData('text') || ''
-    Transforms.insertText(editor, text)
-  }
+export function ComboboxDemo({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-4">
-      <Slate editor={editor} initialValue={initialValue}>
-        <div className="flex flex-wrap gap-2 mb-4 p-2 bg-muted rounded-md">
-          <ToolbarButton format="bold" icon={Bold} tooltip="Bold (Ctrl+B)" />
-          <ToolbarButton format="italic" icon={Italic} tooltip="Italic (Ctrl+I)" />
-          <ToolbarButton format="underline" icon={Underline} tooltip="Underline (Ctrl+U)" />
-          <ToolbarButton format="bulleted-list" icon={List} tooltip="Bulleted List" />
-          <ToolbarButton format="numbered-list" icon={ListOrdered} tooltip="Numbered List" />
-        </div>
-        <div className="min-h-[500px] p-4 border rounded-md bg-background">
-          <Editable
-            renderElement={renderElement}
-            renderLeaf={renderLeaf}
-            placeholder="Start typing your document here..."
-            spellCheck
-            autoFocus
-            onPaste={handlePaste} // Disable image pasting
-            onKeyDown={(event) => {
-              if (!event.ctrlKey) return
-              switch (event.key) {
-                case 'b': {
-                  event.preventDefault()
-                  toggleFormat(editor, 'bold')
-                  break
-                }
-                case 'i': {
-                  event.preventDefault()
-                  toggleFormat(editor, 'italic')
-                  break
-                }
-                case 'u': {
-                  event.preventDefault()
-                  toggleFormat(editor, 'underline')
-                  break
-                }
-              }
-            }}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between truncate"
+        >
+          {value
+            ? frameworks.find((f) => f.value === value)?.label
+            : "Select address..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="md:w-fit w-dvw p-0">
+        <Command>
+          <CommandInput placeholder="Search address..." />
+          <CommandList>
+            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandGroup>
+              {frameworks.map((framework) => (
+                <CommandItem
+                  key={framework.value}
+                  value={framework.value}
+                  onSelect={() => {
+                    onChange(framework.value === value ? "" : framework.value);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === framework.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {framework.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Main form
+export default function MyForm() {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name_6998689863: ["React"],
+      name_0160577085: ["React"],
+      address: "",
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      toast(
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
+        </pre>
+      );
+    } catch (error) {
+      toast.error("Failed to submit the form.");
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="max-w-6xl mx-auto py-4 flex gap-4 lg:px-0 px-4"
+      >
+        <div className="w-full flex flex-col gap-4">
+          {/* Project Title */}
+          <FormField
+            control={form.control}
+            name="name_1498371116"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Project title</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter project name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
+
+          <div className="flex flex-col gap-2">
+            {/* Tech Stack */}
+            <FormField
+              control={form.control}
+              name="name_6998689863"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tech stack</FormLabel>
+                  <FormControl>
+                    <MultiSelector
+                      values={field.value}
+                      onValuesChange={field.onChange}
+                    >
+                      <MultiSelectorTrigger>
+                        <MultiSelectorInput placeholder="Select languages" />
+                      </MultiSelectorTrigger>
+                      <MultiSelectorContent>
+                        <MultiSelectorList>
+                          <MultiSelectorItem value="React">
+                            React
+                          </MultiSelectorItem>
+                          <MultiSelectorItem value="Vue">Vue</MultiSelectorItem>
+                          <MultiSelectorItem value="Svelte">
+                            Svelte
+                          </MultiSelectorItem>
+                        </MultiSelectorList>
+                      </MultiSelectorContent>
+                    </MultiSelector>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Visibility Switch */}
+            <FormField
+              control={form.control}
+              name="name_3377255024"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel>Make technologies visible</FormLabel>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Responsibilities */}
+          <FormField
+            control={form.control}
+            name="name_0160577085"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Responsibilities</FormLabel>
+                <FormControl>
+                  <MultiSelector
+                    values={field.value}
+                    onValuesChange={field.onChange}
+                  >
+                    <MultiSelectorTrigger>
+                      <MultiSelectorInput placeholder="Select roles" />
+                    </MultiSelectorTrigger>
+                    <MultiSelectorContent>
+                      <MultiSelectorList>
+                        <MultiSelectorItem value="React">
+                          React
+                        </MultiSelectorItem>
+                        <MultiSelectorItem value="Vue">Vue</MultiSelectorItem>
+                        <MultiSelectorItem value="Svelte">
+                          Svelte
+                        </MultiSelectorItem>
+                      </MultiSelectorList>
+                    </MultiSelectorContent>
+                  </MultiSelector>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* address Selector */}
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem className="flex flex-col gap-1">
+                <FormLabel>Work address</FormLabel>
+                <FormControl>
+                  <ComboboxDemo value={field.value} onChange={field.onChange} />
+                </FormControl>
+                <FormDescription>
+                  Select <span className="underline">Remote</span> for remote
+                  work
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Submit Button */}
+          <Button type="submit">Submit</Button>
         </div>
-      </Slate>
-    </div>
-  )
+
+        {/* Description with Scroll Area */}
+        <div className="w-full h-[100dvh_-_6rem] flex flex-col gap-2">
+          <Label></Label>
+          
+          <ScrollArea className="w-full h-[calc(100dvh_-_10rem)] rounded-md border p-2">
+            <Blocknote />
+          </ScrollArea>
+        </div>
+      </form>
+    </Form>
+  );
 }

@@ -15,7 +15,11 @@ import { Link } from "react-router-dom";
 import { fetchUser } from "@/lib/slices/userSlice";
 import axios from "axios";
 
-const navItems = ["Contributors", "Projects", "Hackathons"];
+const navItems = [
+  { name: "Contributors", path: "/contributors" },
+  { name: "Projects", path: "/projects" },
+  { name: "Create a Role", path: "/create" },
+];
 
 const Header: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -23,6 +27,7 @@ const Header: React.FC = () => {
     (state: RootState) =>
       state.user.user as {
         username: string;
+        userId: string;
       } | null
   );
   const [loading, setLoading] = useState(true); // Loading state
@@ -67,24 +72,24 @@ const Header: React.FC = () => {
   return (
     <header id="header" className="z-50 bg-white h-16 border-b">
       <div className="header flex flex-wrap md:h-16 items-center justify-between mx-auto p-4 relative max-w-6xl">
-        <a
-          href="#"
+        <Link
+          to="/"
           className="text-[var(--ten)] font-extrabold text-3xl h-full flex items-center"
         >
           <img src="./assets/logo.svg" className="w-full max-w-32" alt="logo" />
-        </a>
+        </Link>
         <div
           id="navbar-sticky"
           className="items-center justify-between w-full dis-none md:!flex md:w-auto order-1 md:order-none z-20"
         >
           <ul className="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white">
             {navItems.map((item) => (
-              <li
-                key={item}
+                <li
+                key={item.path}
                 className="h-full flex cursor-pointer items-center relative after:absolute after:bottom-0 after:h-1 after:w-full after:border-b-4 after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100"
-              >
-                <a href="#">{item}</a>
-              </li>
+                >
+                <Link to={item.path}>{item.name}</Link>
+                </li>
             ))}
           </ul>
         </div>
