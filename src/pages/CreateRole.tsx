@@ -26,21 +26,13 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import "@blocknote/core/fonts/inter.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView, lightDefaultTheme } from "@blocknote/mantine";
@@ -48,23 +40,27 @@ import "@blocknote/mantine/style.css";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-
-
-// Schema definition
+import JobDurationSlider from "@/components/ui/double-slider";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { SimpleDatetimeInput } from "@/components/ui/extension/datetime-picker";
+import React from "react";
+import { Badge } from "@/components/ui/badge";
 
 const formSchema = z.object({
   pName: z.string(),
   techStack: z.array(z.string()).nonempty(),
-  techPublic: z.boolean(),
+  techPublic: z.boolean().optional(),
   roles: z.array(z.string()).nonempty(),
   address: z.string().nonempty(),
+  repoLink: z.string().nonempty("Select a repository"),
 });
-
-// Combobox component
-const frameworks = [
-  { value: "remote", label: "Remote" },
-  { value: "sveltekit", label: "SvelteKit" },
-];
 
 export function ComboboxDemo({
   value,
@@ -74,6 +70,48 @@ export function ComboboxDemo({
   onChange: (val: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Function to fetch location suggestions using LocationIQ API
+  const fetchSuggestions = async (query: string) => {
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const API_KEY = "pk.92f3719211e67eae6c1b204b1f8f5b78";
+      const response = await axios.get(
+        `https://api.locationiq.com/v1/autocomplete.php`,
+        {
+          params: {
+            key: API_KEY,
+            q: query,
+            limit: 5,
+            format: "json",
+          },
+        }
+      );
+
+      const remoteOption = {
+        place_id: "remote",
+        display_name: "remote",
+        display_place: "Remote Location",
+        display_address: "Remote",
+      };
+
+      const updatedSuggestions = [remoteOption, ...response.data];
+      setSuggestions(updatedSuggestions);
+    } catch (error) {
+      console.error("Error fetching location suggestions:", error);
+      setSuggestions([]);
+    }
+
+    setLoading(false);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -84,37 +122,57 @@ export function ComboboxDemo({
           aria-expanded={open}
           className="w-full justify-between truncate"
         >
-          {value
-            ? frameworks.find((f) => f.value === value)?.label
-            : "Select address..."}
+          {value ? value : "Select address..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="md:w-fit w-dvw p-0">
         <Command>
-          <CommandInput placeholder="Search address..." />
+          <CommandInput
+            placeholder="Search address..."
+            onInput={(e) => fetchSuggestions(e.currentTarget.value)}
+          />
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
-            <CommandGroup>
-              {frameworks.map((framework) => (
-                <CommandItem
-                  key={framework.value}
-                  value={framework.value}
-                  onSelect={() => {
-                    onChange(framework.value === value ? "" : framework.value);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === framework.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {framework.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {loading ? (
+              <CommandEmpty>Loading...</CommandEmpty>
+            ) : suggestions.length === 0 ? (
+              <CommandEmpty>No addresses found.</CommandEmpty>
+            ) : (
+              <ScrollArea className="h-[40dvh]">
+                <CommandGroup>
+                  {suggestions.map((suggestion: any) => (
+                    <CommandItem
+                      key={suggestion.place_id}
+                      value={suggestion.display_name}
+                      onSelect={() => {
+                        onChange(suggestion.display_name);
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === suggestion.display_name
+                            ? "opacity-100"
+                            : "opacity-0"
+                        )}
+                      />
+                      {/* Display the place name if available, otherwise show display_name */}
+                      <div>
+                        <span className="font-medium">
+                          {suggestion.display_place || suggestion.address.name}
+                        </span>
+                        <br />
+                        <span className="text-sm text-muted-foreground">
+                          {suggestion.display_address ||
+                            suggestion.display_name}
+                        </span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </ScrollArea>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>
@@ -122,7 +180,140 @@ export function ComboboxDemo({
   );
 }
 
-// Main form
+const badgeStyles = [
+  { background: "bg-red-500/20", border: "border-red-700" },
+  { background: "bg-green-500/20", border: "border-green-700" },
+  { background: "bg-blue-500/20", border: "border-blue-700" },
+  { background: "bg-yellow-500/20", border: "border-yellow-700" },
+  { background: "bg-purple-500/20", border: "border-purple-700" },
+];
+
+function getRandomBadgeStyle() {
+  const randomIndex = Math.floor(Math.random() * badgeStyles.length);
+  return badgeStyles[randomIndex];
+}
+
+export function GithubRepos({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [repos, setRepos] = useState<any[]>([]);
+  const [filteredRepos, setFilteredRepos] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchRepos = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SERVER_URL}/auth/github/repos`,
+          {
+            credentials: "include",
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch repositories");
+        }
+        const data = await response.json();
+        setRepos(data);
+        setFilteredRepos(data); // Initially display all repositories
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRepos();
+  }, []);
+
+  // Filter the repositories based on the search query
+  const handleSearch = (query: string) => {
+    if (query.length === 0) {
+      setFilteredRepos(repos); // Show all repositories if query is empty
+    } else {
+      const lowerCaseQuery = query.toLowerCase();
+      const filtered = repos.filter((repo: any) =>
+        repo.name.toLowerCase().includes(lowerCaseQuery)
+      );
+      setFilteredRepos(filtered);
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between truncate"
+        >
+          {value ? value : "Select repository..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="md:w-full max-w-96 w-dvw p-0">
+        <Command>
+          <CommandInput
+            placeholder="Search repositories..."
+            onInput={(e) => handleSearch(e.currentTarget.value)} // Use input to filter the repos
+          />
+          <CommandList>
+            {loading ? (
+              <CommandEmpty>Loading...</CommandEmpty>
+            ) : filteredRepos.length === 0 ? (
+              <CommandEmpty>No repositories found.</CommandEmpty>
+            ) : (
+              <ScrollArea className="h-[40dvh]">
+                <CommandGroup>
+                  {filteredRepos.map((repo: any) => {
+                    const { background, border } = getRandomBadgeStyle();
+                    return (
+                      <CommandItem
+                        key={repo.id}
+                        value={repo.html_url}
+                        onSelect={() => {
+                          onChange(repo.html_url);
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            value === repo.html_url ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {/* Display the repository name */}
+                        <div className="flex flex-col gap-[2px] overflow-hidden w-full">
+                        <div className="flex gap-2 w-full">
+                          <span className="font-medium">{repo.name}</span>
+                          <Badge
+                            className={`${border} ${background} h-4 border text-black font-normal text-[10px] `}
+                          >
+                            {repo.private ? "Private" : "Public"}
+                          </Badge>
+                        </div>
+                       
+                        <span className="text-xs text-muted-foreground truncate">
+                          {repo.html_url}
+                        </span>
+                        </div>
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              </ScrollArea>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 export default function MyForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -132,11 +323,15 @@ export default function MyForm() {
       address: "",
     },
   });
- 
+
   const userId = useSelector(
-    (state: RootState) =>
-      state.user.user?._id ?? null
+    (state: RootState) => state.user.user?._id ?? null
   );
+  const [selectedRange, setSelectedRange] = useState([30, 180]);
+  const [selectedDateTime, setSelectedDateTime] = React.useState<Date>(
+    new Date()
+  );
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const response = await axios.post(
@@ -144,6 +339,8 @@ export default function MyForm() {
         {
           ...values,
           description: editor.document,
+          duration: selectedRange,
+          deadline: selectedDateTime,
           userId,
         }
       );
@@ -154,16 +351,17 @@ export default function MyForm() {
     }
   };
 
+  const handleRangeChange = (newRange: SetStateAction<number[]>) =>
+    setSelectedRange(newRange);
   const editor = useCreateBlockNote();
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="max-w-6xl mx-auto py-4 flex gap-4 lg:px-0 px-4"
+        className="relative max-w-6xl mx-auto py-4 flex gap-4 lg:px-0 px-4 "
       >
-        <div className="w-full flex flex-col gap-7">
-          {/* Project Title */}
+        <div className="w-full flex flex-col gap-7 pb-16">
           <FormField
             control={form.control}
             name="pName"
@@ -178,63 +376,77 @@ export default function MyForm() {
             )}
           />
 
-          <div className="flex flex-col gap-2">
-            {/* Tech Stack */}
-            <FormField
-              control={form.control}
-              name="techStack"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tech stack</FormLabel>
-                  <FormControl>
-                    <MultiSelector
-                      values={field.value}
-                      onValuesChange={field.onChange}
-                    >
-                      <MultiSelectorTrigger>
-                        <MultiSelectorInput placeholder="Select languages" />
-                      </MultiSelectorTrigger>
-                      <MultiSelectorContent>
-                        <MultiSelectorList>
-                          <MultiSelectorItem value="React">
-                            React
-                          </MultiSelectorItem>
-                          <MultiSelectorItem value="Vue">Vue</MultiSelectorItem>
-                          <MultiSelectorItem value="Svelte">
-                            Svelte
-                          </MultiSelectorItem>
-                        </MultiSelectorList>
-                      </MultiSelectorContent>
-                    </MultiSelector>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="repoLink"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Work address</FormLabel>
+                <FormControl>
+                  <GithubRepos value={field.value} onChange={field.onChange} />
+                </FormControl>
+                <FormDescription>
+                  Select <span className="underline">Remote</span> for remote
+                  work
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            {/* Visibility Switch */}
-            <FormField
-              control={form.control}
-              name="techPublic"
-              render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel>Make technologies visible</FormLabel>
-                    <FormDescription>You can change it from settings</FormDescription>
+          <FormField
+            control={form.control}
+            name="techStack"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tech stack</FormLabel>
+                <FormControl>
+                  <MultiSelector
+                    values={field.value}
+                    onValuesChange={field.onChange}
+                  >
+                    <MultiSelectorTrigger>
+                      <MultiSelectorInput placeholder="Select languages" />
+                    </MultiSelectorTrigger>
+                    <MultiSelectorContent>
+                      <MultiSelectorList>
+                        <MultiSelectorItem value="React">
+                          React
+                        </MultiSelectorItem>
+                        <MultiSelectorItem value="Vue">Vue</MultiSelectorItem>
+                        <MultiSelectorItem value="Svelte">
+                          Svelte
+                        </MultiSelectorItem>
+                      </MultiSelectorList>
+                    </MultiSelectorContent>
+                  </MultiSelector>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="techPublic"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel>Make technologies visible</FormLabel>
+                  <FormDescription>
+                    You can change it from settings
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
-          {/* Responsibilities */}
           <FormField
             control={form.control}
             name="roles"
@@ -267,12 +479,11 @@ export default function MyForm() {
             )}
           />
 
-          {/* address Selector */}
           <FormField
             control={form.control}
             name="address"
             render={({ field }) => (
-              <FormItem className="flex flex-col gap-1">
+              <FormItem>
                 <FormLabel>Work address</FormLabel>
                 <FormControl>
                   <ComboboxDemo value={field.value} onChange={field.onChange} />
@@ -281,23 +492,35 @@ export default function MyForm() {
                   Select <span className="underline">Remote</span> for remote
                   work
                 </FormDescription>
-                <FormMessage className="p-0" />
+                <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* Submit Button */}
-          <Button type="submit">Submit</Button>
+          <div>
+            <Label>Duration</Label>
+            <div className="border rounded-md py-3">
+              <JobDurationSlider onRangeChange={handleRangeChange} />
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Set a deadline</Label>
+            <SimpleDatetimeInput
+              onValueChange={setSelectedDateTime}
+              disablePastDates={true}
+            />
+          </div>
         </div>
 
-        <div className="w-full h-[100dvh_-_6rem] flex flex-col gap-2">
+        <div
+          id="desc"
+          className=" md:sticky md:top-4  w-full flex flex-col gap-2 h-[calc(100dvh_-_6rem)]"
+        >
           <Label>Description</Label>
-          <ScrollArea className="w-full h-[calc(100dvh_-_10rem)] rounded-md border p-2">
-            <BlockNoteView
-              editor={editor}
-              theme={lightDefaultTheme}
-            />
+          <ScrollArea className=" w-full  rounded-md border p-2 h-[calc(100dvh_-_6rem)]">
+            <BlockNoteView editor={editor} theme={lightDefaultTheme} />
           </ScrollArea>
+          <Button type="submit">Submit</Button>
         </div>
       </form>
     </Form>

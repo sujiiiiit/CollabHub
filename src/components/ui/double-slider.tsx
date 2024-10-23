@@ -7,12 +7,19 @@ import { Label } from "@/components/ui/label"
 
 const MAX_DAYS = 365 // Maximum number of days (approximately 1 year)
 
-export default function JobDurationSlider() {
+interface JobDurationSliderProps {
+  onRangeChange?: (range: number[]) => void;
+}
+
+export default function JobDurationSlider({ onRangeChange }: JobDurationSliderProps) {
   const [range, setRange] = useState([30, 180]) // Default range: 1 month to 6 months
 
   const handleSliderChange = useCallback((newValues: number[]) => {
     setRange(newValues)
-  }, [])
+    if (onRangeChange) {
+      onRangeChange(newValues) // Notify the parent component
+    }
+  }, [onRangeChange])
 
   const handleInputChange = useCallback((index: number, value: string) => {
     const numValue = parseInt(value, 10)
@@ -21,11 +28,17 @@ export default function JobDurationSlider() {
       newRange[index] = numValue
       if (index === 0 && numValue <= range[1]) {
         setRange(newRange)
+        if (onRangeChange) {
+          onRangeChange(newRange) // Notify the parent component
+        }
       } else if (index === 1 && numValue >= range[0]) {
         setRange(newRange)
+        if (onRangeChange) {
+          onRangeChange(newRange) // Notify the parent component
+        }
       }
     }
-  }, [range])
+  }, [range, onRangeChange])
 
   const formatDuration = (days: number) => {
     if (days < 30) {
@@ -90,5 +103,3 @@ export default function JobDurationSlider() {
     </div>
   )
 }
-
-export { JobDurationSlider }

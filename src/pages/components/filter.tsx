@@ -22,7 +22,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { JobDurationSlider } from "@/components/ui/double-slider";
+import JobDurationSlider from "@/components/ui/double-slider";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
