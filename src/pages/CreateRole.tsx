@@ -33,10 +33,7 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SetStateAction, useEffect, useState } from "react";
-import "@blocknote/core/fonts/inter.css";
-import { useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteView, lightDefaultTheme } from "@blocknote/mantine";
-import "@blocknote/mantine/style.css";
+
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
@@ -52,6 +49,27 @@ import {
 import { SimpleDatetimeInput } from "@/components/ui/extension/datetime-picker";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+
+//block note editor
+import "@blocknote/core/fonts/inter.css";
+import "@blocknote/mantine/style.css";
+import { BlockNoteEditor, filterSuggestionItems } from "@blocknote/core";
+import {
+  DefaultReactSuggestionItem,
+  getDefaultReactSlashMenuItems,
+  SuggestionMenuController,
+  useCreateBlockNote,
+} from "@blocknote/react";
+import "@blocknote/mantine/style.css";
+import { BlockNoteView, lightDefaultTheme } from "@blocknote/mantine";
+import "@blocknote/core/fonts/inter.css";
+
+// Import the necessary Gemini Flash libraries
+import {
+  GoogleGenerativeAI,
+  HarmBlockThreshold,
+  HarmCategory,
+} from "@google/generative-ai";
 
 const formSchema = z.object({
   pName: z.string(),
@@ -74,7 +92,7 @@ export function ComboboxDemo({
   const [loading, setLoading] = useState(false);
 
   // Function to fetch location suggestions using LocationIQ API
-  const fetchSuggestions = async (query: string) => {
+  const fetchLocation = async (query: string) => {
     if (query.length < 3) {
       setSuggestions([]);
       return;
@@ -83,7 +101,7 @@ export function ComboboxDemo({
     setLoading(true);
 
     try {
-      const API_KEY = "pk.92f3719211e67eae6c1b204b1f8f5b78";
+      const API_KEY = import.meta.env.VITE_LOCATIONIQ_API_KEY;
       const response = await axios.get(
         `https://api.locationiq.com/v1/autocomplete.php`,
         {
@@ -130,7 +148,7 @@ export function ComboboxDemo({
         <Command>
           <CommandInput
             placeholder="Search address..."
-            onInput={(e) => fetchSuggestions(e.currentTarget.value)}
+            onInput={(e) => fetchLocation(e.currentTarget.value)}
           />
           <CommandList>
             {loading ? (
@@ -284,23 +302,25 @@ export function GithubRepos({
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
-                            value === repo.html_url ? "opacity-100" : "opacity-0"
+                            value === repo.html_url
+                              ? "opacity-100"
+                              : "opacity-0"
                           )}
                         />
                         {/* Display the repository name */}
                         <div className="flex flex-col gap-[2px] overflow-hidden w-full">
-                        <div className="flex gap-2 w-full">
-                          <span className="font-medium">{repo.name}</span>
-                          <Badge
-                            className={`${border} ${background} h-4 border text-black font-normal text-[10px] `}
-                          >
-                            {repo.private ? "Private" : "Public"}
-                          </Badge>
-                        </div>
-                       
-                        <span className="text-xs text-muted-foreground truncate">
-                          {repo.html_url}
-                        </span>
+                          <div className="flex gap-2 w-full">
+                            <span className="font-medium">{repo.name}</span>
+                            <Badge
+                              className={`${border} ${background} h-4 border text-black font-normal text-[10px] `}
+                            >
+                              {repo.private ? "Private" : "Public"}
+                            </Badge>
+                          </div>
+
+                          <span className="text-xs text-muted-foreground truncate">
+                            {repo.html_url}
+                          </span>
                         </div>
                       </CommandItem>
                     );
@@ -314,12 +334,128 @@ export function GithubRepos({
     </Popover>
   );
 }
+
+// Function to handle Gemini API streaming and parse each chunk of Markdown to blocks
+const streamFromGemini = async (inputText: string, editor: BlockNoteEditor) => {
+  try {
+    const API_KEY = "AIzaSyDGTYPN56jO_2PAPAJbUICzhTFaEDbfFiI"; // Replace with your actual API key
+    const genAI = new GoogleGenerativeAI(API_KEY);
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      safetySettings: [
+        {
+          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        },
+      ],
+    });
+
+    const result = await model.generateContentStream({
+      contents: [{ role: "user", parts: [{ text: inputText }] }],
+    });
+
+    let accumulatedMarkdown = "";
+    for await (let response of result.stream) {
+      const chunk = response.text();
+      accumulatedMarkdown += chunk;
+
+      // Convert the accumulated Markdown to blocks in real time
+      const blocks = await editor.tryParseMarkdownToBlocks(accumulatedMarkdown);
+      editor.replaceBlocks(editor.document, blocks);
+    }
+  } catch (e) {
+    console.error("Error generating content:", (e as Error).message);
+  }
+};
+
+const contentWritingPrompt = `
+  You are a professional content writer specializing in creating engaging, well-researched, and informative content. categorize the question asked and if it is about your name answer that you are "CollabHub AI Assistant" adn addition what you can do.
+  Follow these guidelines when generating content:
+  
+  1. Start with a catchy introduction to hook the reader.
+  2. Structure the content into clear sections with proper headings and subheadings.
+  3. Ensure the content is relevant and up-to-date, backed by reliable sources when needed.
+  4. Use a friendly and approachable tone to engage the target audience.
+  5. Provide actionable tips, insights, or solutions where applicable.
+  6. Use bullet points, lists, or numbered steps to enhance readability.
+  7. End with a concise conclusion that summarizes the main points and includes a call-to-action if relevant.
+  
+  Your content should be SEO-friendly with natural use of keywords, but avoid keyword stuffing. Prioritize clarity, flow, and value to the reader.
+
+  Topic: "{topic}"
+`;
+
+const insertMagicAi = (editor: BlockNoteEditor) => {
+  const prevText = editor._tiptapEditor.state.doc.textBetween(
+    Math.max(0, editor._tiptapEditor.state.selection.from - 5000),
+    editor._tiptapEditor.state.selection.from - 1,
+    "\n"
+  );
+  const prompt = contentWritingPrompt.replace(
+    "{topic}",
+    prevText || "general content topic"
+  );
+
+  streamFromGemini(prompt, editor);
+};
+
+const insertMagicItem = (editor: BlockNoteEditor) => ({
+  title: "Insert Magic Text",
+  onItemClick: async () => {
+    insertMagicAi(editor);
+  },
+  aliases: ["autocomplete", "ai"],
+  group: "AI",
+  icon: (
+    <svg
+      fill="none"
+      width={24}
+      height={24}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 16 16"
+    >
+      <path
+        d="M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z"
+        fill="url(#prefix__paint0_radial_980_20147)"
+      />
+      <defs>
+        <radialGradient
+          id="prefix__paint0_radial_980_20147"
+          cx="0"
+          cy="0"
+          r="1"
+          gradientUnits="userSpaceOnUse"
+          gradientTransform="matrix(16.1326 5.4553 -43.70045 129.2322 1.588 6.503)"
+        >
+          <stop offset=".067" stop-color="#9168C0" />
+          <stop offset=".343" stop-color="#5684D1" />
+          <stop offset=".672" stop-color="#1BA1E3" />
+        </radialGradient>
+      </defs>
+    </svg>
+  ),
+  subtext: "Continue your note with AI-generated text",
+});
+
+// Update the function to place the AI item first in the menu
+const getCustomSlashMenuItems = (
+  editor: BlockNoteEditor
+): DefaultReactSuggestionItem[] => [
+  insertMagicItem(editor), // Add AI item first
+  ...getDefaultReactSlashMenuItems(editor), // Then add other items
+];
+
 export default function MyForm() {
+  const [_rolesData, setRolesData] = useState<
+    { roleId: string; name: string }[]
+  >([]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       techStack: ["React"],
-      roles: ["React"],
+      roles: [],
       address: "",
     },
   });
@@ -335,7 +471,7 @@ export default function MyForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const response = await axios.post(
-        import.meta.env.VITE_SERVER_URL + "/api/roles",
+        import.meta.env.VITE_SERVER_URL + "/api/rolePost",
         {
           ...values,
           description: editor.document,
@@ -351,6 +487,21 @@ export default function MyForm() {
     }
   };
 
+  useEffect(() => {
+    // Fetch the roles data
+    const fetchRoles = async () => {
+      try {
+        const response = await axios.get(
+          import.meta.env.VITE_SERVER_URL + "/api/roles"
+        );
+        setRolesData(response.data);
+      } catch (error) {
+        console.error("Error fetching roles:", error);
+      }
+    };
+
+    fetchRoles();
+  }, []);
   const handleRangeChange = (newRange: SetStateAction<number[]>) =>
     setSelectedRange(newRange);
   const editor = useCreateBlockNote();
@@ -381,7 +532,7 @@ export default function MyForm() {
             name="repoLink"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Work address</FormLabel>
+                <FormLabel>GIthub Repository</FormLabel>
                 <FormControl>
                   <GithubRepos value={field.value} onChange={field.onChange} />
                 </FormControl>
@@ -463,12 +614,22 @@ export default function MyForm() {
                     </MultiSelectorTrigger>
                     <MultiSelectorContent>
                       <MultiSelectorList>
-                        <MultiSelectorItem value="React">
-                          React
+                        {/* {rolesData.map((role) => (
+                        <MultiSelectorItem
+                          key={role.roleId}
+                          value={role.roleId}
+                        >
+                          {role.name}
                         </MultiSelectorItem>
-                        <MultiSelectorItem value="Vue">Vue</MultiSelectorItem>
-                        <MultiSelectorItem value="Svelte">
-                          Svelte
+                      ))} */}
+                        <MultiSelectorItem value="Website Developer">
+                          Website Developer
+                        </MultiSelectorItem>
+                        <MultiSelectorItem value="Graphic Designer">
+                          Graphic Designer
+                        </MultiSelectorItem>
+                        <MultiSelectorItem value="Mobile Developer">
+                          Mobile Developer
                         </MultiSelectorItem>
                       </MultiSelectorList>
                     </MultiSelectorContent>
@@ -518,7 +679,18 @@ export default function MyForm() {
         >
           <Label>Description</Label>
           <ScrollArea className=" w-full  rounded-md border p-2 h-[calc(100dvh_-_6rem)]">
-            <BlockNoteView editor={editor} theme={lightDefaultTheme} />
+            <BlockNoteView
+              editor={editor}
+              slashMenu={false}
+              theme={lightDefaultTheme}
+            >
+              <SuggestionMenuController
+                triggerCharacter={"/"}
+                getItems={async (query) =>
+                  filterSuggestionItems(getCustomSlashMenuItems(editor), query)
+                }
+              />
+            </BlockNoteView>
           </ScrollArea>
           <Button type="submit">Submit</Button>
         </div>

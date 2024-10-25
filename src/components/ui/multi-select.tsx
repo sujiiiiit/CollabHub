@@ -239,7 +239,7 @@ const MultiSelectorTrigger = forwardRef<
         <Badge
           key={item}
           className={cn(
-            "px-1 bg-black/20 rounded-md flex items-center gap-1",
+            "px-1 bg-black/10 rounded-md flex items-center gap-1",
             activeIndex === index && "ring-2 ring-muted-foreground ",
           )}
           variant={"secondary"}
@@ -322,7 +322,7 @@ const MultiSelectorList = forwardRef<
     <CommandList
       ref={ref}
       className={cn(
-        "p-2 flex flex-col gap-2  scrollbar-thin scrollbar-track-transparent transition-colors scrollbar-thumb-muted-foreground dark:scrollbar-thumb-muted scrollbar-thumb-rounded-lg w-full absolute bg-background  z-10 border border-black/40  top-2",
+        "p-2 flex flex-col gap-2  scrollbar-thin scrollbar-track-transparent transition-colors scrollbar-thumb-muted-foreground dark:scrollbar-thumb-muted scrollbar-thumb-rounded-lg w-full absolute bg-background  z-10 border border-black/20  top-2",
         className,
       )}
     >

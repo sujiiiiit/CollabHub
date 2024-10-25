@@ -29,7 +29,7 @@
     "@editorjs/simple-image": "^1.6.0",
     "@editorjs/table": "^2.4.2",
     "@editorjs/warning": "^1.4.0",
-    "@google/generative-ai": "^0.17.1",
+    "@google/generative-ai": "^0.17.2",
     "@hookform/resolvers": "^3.9.0",
     "@nanostores/react": "github:ai/react",
     "@radix-ui/react-accordion": "^1.2.1",
