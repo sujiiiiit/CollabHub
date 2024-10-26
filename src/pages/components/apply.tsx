@@ -58,7 +58,7 @@ export default function DrawerDialogDemo() {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button className="bg-primary text-black hover:border-black hover:border hover:outline-none hover:shadow-[4px_4px_0_0_#000] hover:transform hover:translate-x-[-4px] hover:translate-y-[-4px]">
+          <Button className="bg-primary lg:w-auto w-[calc(100%_-_16px)] text-black hover:border-black hover:border hover:outline-none hover:shadow-[4px_4px_0_0_#000] hover:transform hover:translate-x-[-4px] hover:translate-y-[-4px] mx-2 ">
             Collaborate Now
           </Button>
         </DialogTrigger>
@@ -76,7 +76,7 @@ export default function DrawerDialogDemo() {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button className="bg-primary text-black hover:border-black hover:border hover:outline-none hover:shadow-[4px_4px_0_0_#000] hover:transform hover:translate-x-[-4px] hover:translate-y-[-4px]">
+        <Button className="bg-primary lg:w-auto w-[calc(100%_-_16px)] text-black hover:border-black hover:border hover:outline-none hover:shadow-[4px_4px_0_0_#000] hover:transform hover:translate-x-[-4px] hover:translate-y-[-4px] mx-2">
           Collaborate Now
         </Button>
       </DrawerTrigger>

@@ -70,8 +70,8 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header id="header" className="z-50 bg-white h-16 border-b">
-      <div className="header flex flex-wrap md:h-16 items-center justify-between mx-auto p-4 relative max-w-6xl">
+    <header id="header" className="z-50 bg-white h-16 md:relative sticky top-0 border-b flex justify-between w-full">
+      <div className="header w-full flex flex-wrap md:h-16 items-center justify-between mx-auto px-4 relative max-w-6xl">
         <Link
           to="/"
           className="text-[var(--ten)] font-extrabold text-3xl h-full flex items-center"
@@ -82,28 +82,24 @@ const Header: React.FC = () => {
           id="navbar-sticky"
           className="items-center justify-between w-full dis-none md:!flex md:w-auto order-1 md:order-none z-20"
         >
-          <ul className="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white">
+          <ul className="flex flex-col md:p-0 md:relative fixed inset-x-0 md:top-0 top-16 bottom-0 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white">
             {navItems.map((item) => (
-                <li
+              <li
                 key={item.path}
-                className="h-full flex cursor-pointer items-center relative after:absolute after:bottom-0 after:h-1 after:w-full after:border-b-4 after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100"
-                >
+                className="md:h-12 md:text-base text-xl border-b md:border-b-0 py-10 md:py-0 px-4 md:px-0  flex cursor-pointer items-center relative after:absolute after:bottom-0 after:h-1 after:w-full after:border-b-4 after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100"
+              >
                 <Link to={item.path}>{item.name}</Link>
-                </li>
+              </li>
             ))}
           </ul>
         </div>
 
         <div className="flex gap-2 items-center justify-between h-full">
           {loading ? (
-             <Avatar className="outline-0 focus-visible:outline-none">
-             
-             <AvatarFallback className="outline-0 focus-visible:outline-none">
-              
-             </AvatarFallback>
-           </Avatar>
+            <Avatar className="outline-0 focus-visible:outline-none">
+              <AvatarFallback className="outline-0 focus-visible:outline-none"></AvatarFallback>
+            </Avatar>
           ) : user ? (
-            
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <Avatar className="outline-0 focus-visible:outline-none">
@@ -124,13 +120,19 @@ const Header: React.FC = () => {
                 </Link>
                 <DropdownMenuItem>Billing</DropdownMenuItem>
                 <DropdownMenuItem>Team</DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="text-red-400">
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-red-400"
+                >
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button onClick={handleLogin} className="bg-black rounded-full gap-2">
+            <Button
+              onClick={handleLogin}
+              className="bg-black rounded-full gap-2"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"

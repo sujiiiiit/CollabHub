@@ -126,6 +126,7 @@ const getCustomSlashMenuItems = (
   editor: BlockNoteEditor
 ): DefaultReactSuggestionItem[] => [
   insertMagicItem(editor), // Add AI item first
+  ...getDefaultReactSlashMenuItems(editor), // Then add other items
 ];
 
 const TextEditor: React.FC = () => {

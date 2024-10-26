@@ -1,6 +1,4 @@
 "use client";
-import withAuth from "@/components/AuthRoute";
-
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -374,7 +372,7 @@ const streamFromGemini = async (inputText: string, editor: BlockNoteEditor) => {
 const contentWritingPrompt = `
   You are a professional content writer specializing in creating engaging, well-researched, and informative content. categorize the question asked and if it is about your name answer that you are "CollabHub AI Assistant" adn addition what you can do.
   Follow these guidelines when generating content:
-  Note: dont use h1 headings instead start from h3 and for remaiing content use lower headings like h4 h5 and h6
+  
   1. Start with a catchy introduction to hook the reader.
   2. Structure the content into clear sections with proper headings and subheadings.
   3. Ensure the content is relevant and up-to-date, backed by reliable sources when needed.
@@ -430,9 +428,9 @@ const insertMagicItem = (editor: BlockNoteEditor) => ({
           gradientUnits="userSpaceOnUse"
           gradientTransform="matrix(16.1326 5.4553 -43.70045 129.2322 1.588 6.503)"
         >
-          <stop offset=".067" stopColor="#9168C0" />
-          <stop offset=".343" stopColor="#5684D1" />
-          <stop offset=".672" stopColor="#1BA1E3" />
+          <stop offset=".067" stop-color="#9168C0" />
+          <stop offset=".343" stop-color="#5684D1" />
+          <stop offset=".672" stop-color="#1BA1E3" />
         </radialGradient>
       </defs>
     </svg>
@@ -449,11 +447,8 @@ const getCustomSlashMenuItems = (
 ];
 
 export default function MyForm() {
-  const [rolesData, setRolesData] = useState<
+  const [_rolesData, setRolesData] = useState<
     { roleId: string; name: string }[]
-  >([]);
-  const [techStackData, setTechStackData] = useState<
-    { stackId: string; name: string }[]
   >([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -504,17 +499,7 @@ export default function MyForm() {
         console.error("Error fetching roles:", error);
       }
     };
-    const fetchStack = async () => {
-      try {
-        const response = await axios.get(
-          import.meta.env.VITE_SERVER_URL + "/api/techstack"
-        );
-        setTechStackData(response.data);
-      } catch (error) {
-        console.error("Error fetching roles:", error);
-      }
-    };
-    fetchStack();
+
     fetchRoles();
   }, []);
   const handleRangeChange = (newRange: SetStateAction<number[]>) =>
@@ -576,16 +561,13 @@ export default function MyForm() {
                     </MultiSelectorTrigger>
                     <MultiSelectorContent>
                       <MultiSelectorList>
-                        <ScrollArea className="h-fit max-h-[40dvh]">
-                          {techStackData.map((tech) => (
-                            <MultiSelectorItem
-                              key={tech.stackId}
-                              value={tech.name}
-                            >
-                              {tech.name}
-                            </MultiSelectorItem>
-                          ))}
-                        </ScrollArea>
+                        <MultiSelectorItem value="React">
+                          React
+                        </MultiSelectorItem>
+                        <MultiSelectorItem value="Vue">Vue</MultiSelectorItem>
+                        <MultiSelectorItem value="Svelte">
+                          Svelte
+                        </MultiSelectorItem>
                       </MultiSelectorList>
                     </MultiSelectorContent>
                   </MultiSelector>
@@ -632,16 +614,23 @@ export default function MyForm() {
                     </MultiSelectorTrigger>
                     <MultiSelectorContent>
                       <MultiSelectorList>
-                        <ScrollArea className="h-[40dvh]">
-                          {rolesData.map((role) => (
-                            <MultiSelectorItem
-                              key={role.roleId}
-                              value={role.name}
-                            >
-                              {role.name}
-                            </MultiSelectorItem>
-                          ))}
-                        </ScrollArea>
+                        {/* {rolesData.map((role) => (
+                        <MultiSelectorItem
+                          key={role.roleId}
+                          value={role.roleId}
+                        >
+                          {role.name}
+                        </MultiSelectorItem>
+                      ))} */}
+                        <MultiSelectorItem value="Website Developer">
+                          Website Developer
+                        </MultiSelectorItem>
+                        <MultiSelectorItem value="Graphic Designer">
+                          Graphic Designer
+                        </MultiSelectorItem>
+                        <MultiSelectorItem value="Mobile Developer">
+                          Mobile Developer
+                        </MultiSelectorItem>
                       </MultiSelectorList>
                     </MultiSelectorContent>
                   </MultiSelector>
@@ -703,7 +692,7 @@ export default function MyForm() {
               />
             </BlockNoteView>
           </ScrollArea>
-          <Button type="submit" className="text-black">Submit</Button>
+          <Button type="submit">Submit</Button>
         </div>
       </form>
     </Form>
