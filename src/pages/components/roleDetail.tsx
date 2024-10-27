@@ -73,7 +73,7 @@ const RoleDetail: React.FC<RoleDetailProps> = ({ id }) => {
   }, [editor, id]);
 
   return (
-    <ScrollArea className="md:h-[calc(100dvh_-_18px)] h-[calc(100dvh_-_7rem)] justify-between md:border md:mt-2 rounded-[8px] px-5">
+    <ScrollArea className="md:h-[calc(100dvh_-_2rem)] h-[calc(100dvh_-_7rem)] justify-between md:border md:mt-2 rounded-[8px] px-5 md:top-4">
       {loading ? (
         <Loading />
       ) : (

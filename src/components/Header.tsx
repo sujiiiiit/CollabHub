@@ -16,8 +16,8 @@ import { fetchUser } from "@/lib/slices/userSlice";
 import axios from "axios";
 
 const navItems = [
-  { name: "Contributors", path: "/contributors" },
-  { name: "Projects", path: "/projects" },
+  { name: "Search", path: "/" },
+  { name: "Activity", path: "/activity" },
   { name: "Create a Role", path: "/create" },
 ];
 
