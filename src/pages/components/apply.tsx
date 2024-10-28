@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { toast } from "sonner";
@@ -43,32 +42,66 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useEffect, useState } from "react";
 
 const formSchema = z.object({
   message: z.string().min(1, "This field is required"),
-  resume: z.instanceof(FileList)
-
+  resume: z.instanceof(FileList),
 });
+
+const hardcodedRolePostId = "6718d6064ec4c6709dc68bdb";
 
 export default function DrawerDialogDemo() {
   const isAuthenticated = useSelector((state: RootState) => !!state.user.user);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState<boolean>(false);
   const isDesktop = useMediaQuery("(min-width: 600px)");
+  const userId = useSelector(
+    (state: RootState) => state.user.user?._id ?? null
+  );
+
+  const [isApplied, setIsApplied] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkApplicationStatus = async () => {
+      if (!userId) return;
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/application/${userId}/${hardcodedRolePostId}`
+        );
+        if(response){
+          setIsApplied(response.data.applied);
+          console.log(response.data.applied)
+
+        }
+      } catch (error) {
+        console.error("Failed to check application status:", error);
+      }
+    };
+
+    checkApplicationStatus();
+  }, [userId]);
 
   if (isAuthenticated) {
     if (isDesktop) {
       return (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-primary lg:w-auto w-[calc(100%_-_16px)] text-black hover:border-black hover:border hover:outline-none hover:shadow-[4px_4px_0_0_#000] hover:transform hover:translate-x-[-4px] hover:translate-y-[-4px] mx-2 ">
-              Collaborate Now
+            <Button
+              disabled={isApplied}
+              className="bg-primary lg:w-auto w-[calc(100%_-_16px)] text-black hover:border-black hover:border hover:outline-none hover:shadow-[4px_4px_0_0_#000] hover:transform hover:translate-x-[-4px] hover:translate-y-[-4px] mx-2 "
+            >
+              {isApplied ? "Applied" : "Collaborate Now"}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:rounded-none">
             <DialogHeader>
               <DialogTitle>Apply</DialogTitle>
             </DialogHeader>
-            <ProfileForm className="flex flex-col gap-2" />
+            <ProfileForm
+              open={open}
+              setOpen={setOpen}
+              className="flex flex-col gap-2"
+            />
           </DialogContent>
         </Dialog>
       );
@@ -85,7 +118,11 @@ export default function DrawerDialogDemo() {
           <DrawerHeader className="text-left">
             <DrawerTitle>Apply</DrawerTitle>
           </DrawerHeader>
-          <ProfileForm className="px-4 flex flex-col gap-2" />
+          <ProfileForm
+            open={open}
+            setOpen={setOpen}
+            className="px-4 flex flex-col gap-2"
+          />
           <DrawerFooter className="pt-2">
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>
@@ -112,46 +149,54 @@ export default function DrawerDialogDemo() {
   }
 }
 
-function ProfileForm({ className }: React.ComponentProps<"form">) {
+interface ProfileFormProps {
+  className?: string;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+function ProfileForm({
+  className,
+  open,
+  setOpen,
+}: ProfileFormProps & React.ComponentProps<"form">) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    mode: "onSubmit", // Only validates on submit
+    mode: "onSubmit",
   });
 
   const userId = useSelector(
     (state: RootState) => state.user.user?._id ?? null
   );
 
-  const hardcodedRolePostId = "67890"; // Hardcoded rolePostId
-
-  const onSubmit: (values: z.infer<typeof formSchema>) => Promise<void> = async (values) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>): Promise<void> => {
     try {
-      const formData = new FormData();
-      formData.append("message", values.message);
-      formData.append("userId", userId?userId:"");
-      formData.append("rolePostId", hardcodedRolePostId);
-      formData.append("resume", values.resume[0]); // Assuming resume is a FileList
-  
       const response = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/application/submit`,
-        formData,
+        {
+          ...values,
+          message: values.message,
+          resume: values.resume[0],
+          rolePostId: hardcodedRolePostId,
+          userId: userId,
+        },
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         }
       );
-      console.log(response);
-      toast.success("Role created successfully");
-      setOpen(false);
+      if (response.status === 201) {
+        toast.success("Role created successfully");
+        setOpen(false);
+      }
     } catch (error) {
+      console.log(error);
       toast.error("Failed to submit the form.");
     }
   };
-  
 
   const fileRef = form.register("resume");
-
 
   return (
     <Form {...form}>
@@ -173,35 +218,28 @@ function ProfileForm({ className }: React.ComponentProps<"form">) {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="resume"
-          render={({ field, fieldState }) => {
-            return (
-              <FormItem>
-                <FormLabel>File</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    placeholder="Choose a file"
-                    {...fileRef}
-                    onChange={(event) => {
-                      field.onChange(event.target?.files?.[0] ?? undefined);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            );
-          }}
+          render={({ field, fieldState }) => (
+            <FormItem>
+              <FormLabel>File</FormLabel>
+              <FormControl>
+                <Input
+                  type="file"
+                  placeholder="Choose a file"
+                  {...fileRef}
+                  onChange={(event) => {
+                    field.onChange(event.target?.files?.[0] ?? undefined);
+                  }}
+                />
+              </FormControl>
+              <FormMessage>{fieldState.error?.message}</FormMessage>
+            </FormItem>
+          )}
         />
         <Button type="submit">Submit</Button>
       </form>
     </Form>
   );
 }
-function setOpen(arg0: boolean) {
-  throw new Error("Function not implemented.");
-}
-

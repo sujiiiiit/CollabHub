@@ -12,7 +12,9 @@ export default function Activity() {
           </TabsList>
         </div>
         <div className="w-full max-w-6xl m-auto p-4 relative">
-          <TabsContent value="application"></TabsContent>
+          <TabsContent value="application">
+            
+          </TabsContent>
           <TabsContent value="createdRoles">
             Change your password here.
           </TabsContent>
