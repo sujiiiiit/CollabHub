@@ -7,6 +7,7 @@ import Repos from "@/pages/Repos";
 import Profile from "@/pages/Profile";
 import Search from "@/pages/Search";
 import Activity from "@/pages/Activity/activity";
+import AI from "@/pages/ai/ai"
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/repo" element={<Repos />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/create" element={<AuthRoute component={CreateRole} />} />
+        <Route path="/ai" element={<AI/>} />
       </Routes>
     </ScrollArea>
   );

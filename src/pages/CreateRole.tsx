@@ -63,6 +63,7 @@ import {
 import "@blocknote/mantine/style.css";
 import { BlockNoteView, lightDefaultTheme } from "@blocknote/mantine";
 import "@blocknote/core/fonts/inter.css";
+import { useNavigate } from 'react-router-dom';
 
 // Import the necessary Gemini Flash libraries
 import {
@@ -222,6 +223,8 @@ export function GithubRepos({
   const [repos, setRepos] = useState<any[]>([]);
   const [filteredRepos, setFilteredRepos] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+
 
   useEffect(() => {
     const fetchRepos = async () => {
@@ -453,6 +456,8 @@ export default function MyForm() {
   const [techStackData, setTechStackData] = useState<
     { stackId: string; name: string }[]
   >([]);
+  const navigate = useNavigate();
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -485,6 +490,10 @@ export default function MyForm() {
       );
       console.log(response);
       toast.success("Role created successfully");
+      if(response.status==201){
+        navigate('/');
+      }
+      
     } catch (error) {
       toast.error("Failed to submit the form.");
     }

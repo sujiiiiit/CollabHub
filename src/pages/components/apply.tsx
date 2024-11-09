@@ -49,29 +49,32 @@ const formSchema = z.object({
   resume: z.instanceof(FileList),
 });
 
-const hardcodedRolePostId = "6718d6064ec4c6709dc68bdb";
 
-export default function DrawerDialogDemo() {
+interface ApplyProps{
+  postId: string;
+}
+
+const Apply: React.FC<ApplyProps> = ({ postId }) => {
   const isAuthenticated = useSelector((state: RootState) => !!state.user.user);
   const [open, setOpen] = useState<boolean>(false);
   const isDesktop = useMediaQuery("(min-width: 600px)");
-  const userId = useSelector(
-    (state: RootState) => state.user.user?._id ?? null
+  const userName = useSelector(
+    (state: RootState) => state.user.user?.username ?? null
   );
-
   const [isApplied, setIsApplied] = useState<boolean>(false);
+
 
   useEffect(() => {
     const checkApplicationStatus = async () => {
-      if (!userId) return;
+      if (!userName) return;
+      
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL}/api/application/${userId}/${hardcodedRolePostId}`
+          `${import.meta.env.VITE_SERVER_URL}/api/application/check/${userName}/${postId+userName}`
         );
         if(response){
           setIsApplied(response.data.applied);
           console.log(response.data.applied)
-
         }
       } catch (error) {
         console.error("Failed to check application status:", error);
@@ -79,7 +82,7 @@ export default function DrawerDialogDemo() {
     };
 
     checkApplicationStatus();
-  }, [userId]);
+  }, [userName]);
 
   if (isAuthenticated) {
     if (isDesktop) {
@@ -101,6 +104,7 @@ export default function DrawerDialogDemo() {
               open={open}
               setOpen={setOpen}
               className="flex flex-col gap-2"
+              postId={postId}
             />
           </DialogContent>
         </Dialog>
@@ -122,6 +126,7 @@ export default function DrawerDialogDemo() {
             open={open}
             setOpen={setOpen}
             className="px-4 flex flex-col gap-2"
+            postId={postId}
           />
           <DrawerFooter className="pt-2">
             <DrawerClose asChild>
@@ -153,11 +158,13 @@ interface ProfileFormProps {
   className?: string;
   open: boolean;
   setOpen: (open: boolean) => void;
+  postId: string;
 }
 
 function ProfileForm({
   className,
   open,
+  postId,
   setOpen,
 }: ProfileFormProps & React.ComponentProps<"form">) {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -165,8 +172,8 @@ function ProfileForm({
     mode: "onSubmit",
   });
 
-  const userId = useSelector(
-    (state: RootState) => state.user.user?._id ?? null
+  const userName = useSelector(
+    (state: RootState) => state.user.user?.username ?? null
   );
 
   const onSubmit = async (values: z.infer<typeof formSchema>): Promise<void> => {
@@ -177,8 +184,8 @@ function ProfileForm({
           ...values,
           message: values.message,
           resume: values.resume[0],
-          rolePostId: hardcodedRolePostId,
-          userId: userId,
+          rolePostId: postId+userName,
+          username: userName,
         },
         {
           headers: {
@@ -187,7 +194,7 @@ function ProfileForm({
         }
       );
       if (response.status === 201) {
-        toast.success("Role created successfully");
+        toast.success("Applied successfully");
         setOpen(false);
       }
     } catch (error) {
@@ -243,3 +250,6 @@ function ProfileForm({
     </Form>
   );
 }
+
+
+export default Apply;
