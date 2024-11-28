@@ -50,11 +50,15 @@ const formSchema = z.object({
 });
 
 
-interface ApplyProps{
+interface ApplyProps {
   postId: string;
+  moreData: {
+    role: string;
+    [key: string]: any;
+  };
 }
 
-const Apply: React.FC<ApplyProps> = ({ postId }) => {
+const Apply: React.FC<ApplyProps> = ({ postId,moreData }) => {
   const isAuthenticated = useSelector((state: RootState) => !!state.user.user);
   const [open, setOpen] = useState<boolean>(false);
   const isDesktop = useMediaQuery("(min-width: 600px)");
@@ -105,6 +109,7 @@ const Apply: React.FC<ApplyProps> = ({ postId }) => {
               setOpen={setOpen}
               className="flex flex-col gap-2"
               postId={postId}
+              moreData={moreData}
             />
           </DialogContent>
         </Dialog>
@@ -127,6 +132,7 @@ const Apply: React.FC<ApplyProps> = ({ postId }) => {
             setOpen={setOpen}
             className="px-4 flex flex-col gap-2"
             postId={postId}
+            moreData={moreData}
           />
           <DrawerFooter className="pt-2">
             <DrawerClose asChild>
@@ -159,12 +165,17 @@ interface ProfileFormProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   postId: string;
+  moreData: {
+    role: string;
+    [key: string]: any;
+  };
 }
 
 function ProfileForm({
   className,
   open,
   postId,
+  moreData,
   setOpen,
 }: ProfileFormProps & React.ComponentProps<"form">) {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -186,6 +197,7 @@ function ProfileForm({
           resume: values.resume[0],
           rolePostId: postId+userName,
           username: userName,
+          role:moreData["role"],
         },
         {
           headers: {

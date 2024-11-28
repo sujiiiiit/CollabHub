@@ -24,17 +24,11 @@ import {
 // Function to handle Gemini API streaming and parse each chunk of Markdown to blocks
 const streamFromGemini = async (inputText: string, editor: BlockNoteEditor) => {
   try {
-    const API_KEY = "AIzaSyDGTYPN56jO_2PAPAJbUICzhTFaEDbfFiI"; // Replace with your actual API key
+    const API_KEY = "AIzaSyAyn0mj-imk0zGvNHwIEEPooaNDMbK6YZc"; // Replace with your actual API key
     const genAI = new GoogleGenerativeAI(API_KEY);
 
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
-      safetySettings: [
-        {
-          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-      ],
     });
 
     const result = await model.generateContentStream({
