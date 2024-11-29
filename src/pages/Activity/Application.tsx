@@ -17,14 +17,14 @@ type JobApplication = {
   rolePostId?: string;
   role?: string;
   appliedOn?: string;
-  status?: "Pending" | "Interviewed" | "Rejected" | "Offered";
+  status?: "pending" | "Interviewed" | "rejected" | "accepted";
 };
 
 const statusColors = {
-  Pending: "bg-yellow-500",
+  pending: "bg-yellow-500",
   Interviewed: "bg-blue-500",
-  Rejected: "bg-red-500",
-  Offered: "bg-green-500",
+  rejected: "bg-red-500",
+  accepted: "bg-green-500",
 };
 
 export default function JobApplicationsTable() {

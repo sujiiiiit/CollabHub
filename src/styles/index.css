@@ -72,3 +72,6 @@ p {
 .dis-none {
   display: none !important;
 }
+
+
+.monaco-editor { position: absolute !important; }

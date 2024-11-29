@@ -5,11 +5,14 @@ import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, MoreHorizontal, Plus } from "lucide-react";
 import { RootState } from "@/lib/store";
+import { useNavigate } from "react-router-dom";
 
 
 
 
 export default function Component() {
+  const navigate = useNavigate();
+
   interface JobRole {
     id: string;
     roles: string[];
@@ -44,7 +47,9 @@ export default function Component() {
   const deleteRole = (id: string) => {
     setJobRoles((prevRoles) => prevRoles.filter((role) => role.id !== id));
   };
-
+  const handleEdit = (id: string) => {
+    navigate(`/update/${id}`);
+  };
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
@@ -87,7 +92,7 @@ export default function Component() {
                 
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex space-x-2">
-                    <Button variant="outline" size="icon">
+                    <Button variant="outline" size="icon" onClick={() => handleEdit(role.id)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
@@ -97,9 +102,7 @@ export default function Component() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
+                   
                   </div>
                 </td>
               </tr>

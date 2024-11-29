@@ -9,10 +9,11 @@ import Search from "@/pages/Search";
 import Activity from "@/pages/Activity/activity";
 import AI from "@/pages/ai/ai"
 import Resume from "@/pages/Activity/Resume"
+import UpdateRole from "@/pages/UpdateRole";
 
 function App() {
   const location = useLocation();
-  const hideHeaderRoutes = ["/resume"];
+  const hideHeaderRoutes = ["/resume","/ai"];
 
   return (
     <ScrollArea className="relative w-full h-dvh">
@@ -21,12 +22,12 @@ function App() {
       <Routes>
         <Route path="/" element={<Search />} />
         <Route path="/activity" element={<AuthRoute component={Activity} />} />
-        {/* <Route path="/create" element={<CreateRole/>} /> */}
         <Route path="/repo" element={<Repos />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/create" element={<AuthRoute component={CreateRole} />} />
         <Route path="/ai" element={<AI/>} />
         <Route path="/resume/:id" element={<Resume />} />
+        <Route path="/update/:id" element={<UpdateRole/>} />
       </Routes>
     </ScrollArea>
   );
