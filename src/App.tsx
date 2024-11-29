@@ -25,9 +25,9 @@ function App() {
         <Route path="/repo" element={<Repos />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/create" element={<AuthRoute component={CreateRole} />} />
-        <Route path="/ai" element={<AI/>} />
+        <Route path="/ai/:userName/:repoName" element={<AI />} />
         <Route path="/resume/:id" element={<Resume />} />
-        <Route path="/update/:id" element={<UpdateRole/>} />
+        <Route path="/update/:id" element={<UpdateRole />} />
       </Routes>
     </ScrollArea>
   );

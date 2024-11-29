@@ -31,16 +31,17 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, File as FileIcon, Folder } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { AutosizeTextarea } from "@/components/ui/extension/auto-textarea";
-import { Button } from "@/components/ui/button";
+import Gemini from "./Gemini";
 
-export default function AI({ owner = "facebook", repo = "react" }) {
+export default function AI() {
+  const params = useParams<{ userName: string, repoName: string }>();
+
   const [selectedFileContent, setSelectedFileContent] = useState<string | null>(
     null
   );
@@ -83,7 +84,7 @@ export default function AI({ owner = "facebook", repo = "react" }) {
   const fetchFileTree = async (path: string) => {
     try {
       const response = await axios.get(
-        `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+        `https://api.github.com/repos/${params.userName}/${params.repoName}/contents/${path}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -105,7 +106,7 @@ export default function AI({ owner = "facebook", repo = "react" }) {
 
     try {
       const response = await axios.get(
-        `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+        `https://api.github.com/repos/${params.userName}/${params.repoName}/contents/${filePath}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -302,18 +303,8 @@ export default function AI({ owner = "facebook", repo = "react" }) {
                   <h2>Ask to AI</h2>
                 </div>
               </div>
-              <div className="relative w-full md:h-[calc(100dvh_-_4rem)] h-[100dvh_-_2rem]] bg-white">
-                <div className="absolute bottom-0 left-0 right-0 bg-white border-t flex flex-nowrap px-4 py-2 items-center">
-                  <AutosizeTextarea
-                  className="border-0"
-                    placeholder="Ask question about repository"
-                    maxHeight={200}
-                  />
-                  <Button variant={"ghost"} size={"icon"}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#000000" viewBox="0 0 256 256"><path d="M231.87,114l-168-95.89A16,16,0,0,0,40.92,37.34L71.55,128,40.92,218.67A16,16,0,0,0,56,240a16.15,16.15,0,0,0,7.93-2.1l167.92-96.05a16,16,0,0,0,.05-27.89ZM56,224a.56.56,0,0,0,0-.12L85.74,136H144a8,8,0,0,0,0-16H85.74L56.06,32.16A.46.46,0,0,0,56,32l168,95.83Z"></path></svg>
-                  </Button>
-                </div>
-              </div>
+              {/* chats here  */}
+              <Gemini ownerId={params.userName || ''} repo={params.repoName || ''}/>
             </ResizablePanel>
           </ResizablePanelGroup>
         </main>
