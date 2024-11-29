@@ -1,135 +1,234 @@
-"use client"
-
-import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { RootState } from "@/lib/store";
+import { useSelector } from "react-redux";
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { CheckCircle, XCircle } from "lucide-react"
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
-type Application = {
-  id: string
-  username: string
-  message: string
-  resumeLink: string
-  status: "pending" | "accepted" | "rejected"
+interface Application {
+  id: string;
+  username: string;
+  message: string;
+  resumeLink: string;
+  status: string;
+  role: string;
+  appliedOn: string;
 }
 
-export default function CollaborationRequests() {
-  const [applications, setApplications] = useState<Application[]>([
-    {
-      id: "1",
-      username: "johndoe",
-      message: "I'm excited to collaborate on this project!",
-      resumeLink: "https://example.com/johndoe-resume.pdf",
-      status: "pending",
-    },
-    {
-      id: "2",
-      username: "janedoe",
-      message: "I have experience in similar projects and would love to contribute.",
-      resumeLink: "https://example.com/janedoe-resume.pdf",
-      status: "pending",
-    },
-    {
-      id: "3",
-      username: "bobsmith",
-      message: "Looking forward to bringing my skills to the team.",
-      resumeLink: "https://example.com/bobsmith-resume.pdf",
-      status: "pending",
-    },
-  ])
+const statusColors = {
+  pending: "bg-yellow-500",
+  rejected: "bg-red-500",
+  accepted: "bg-green-500",
+};
+
+const Notifications: React.FC = () => {
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [previousStatus, setPreviousStatus] = useState<{
+    [key: string]: string;
+  }>({});
+  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
+  const user = useSelector(
+    (state: RootState) =>
+      state.user.user as {
+        username: string;
+        userId: string;
+      } | null
+  );
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/application/rolepost/user/${
+            user?.username
+          }`
+        );
+        setApplications(response.data);
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+      }
+    };
+
+    fetchApplications();
+  }, [user]);
+
+  const updateApplicationStatus = async (id: string, status: string) => {
+    setLoading((prev) => ({ ...prev, [id]: true }));
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_SERVER_URL}/api/application/status/${id}`,
+        { status }
+      );
+      setApplications(
+        applications.map((app) => (app.id === id ? { ...app, status } : app))
+      );
+    } catch (error) {
+      console.error(`Error updating application status:`, error);
+    } finally {
+      setLoading((prev) => ({ ...prev, [id]: false }));
+    }
+  };
 
   const handleAccept = (id: string) => {
-    setApplications(applications.map(app => 
-      app.id === id ? { ...app, status: "accepted" } : app
-    ))
-  }
+    setPreviousStatus((prev) => ({ ...prev, [id]: "pending" }));
+    updateApplicationStatus(id, "accepted");
+  };
 
   const handleReject = (id: string) => {
-    setApplications(applications.map(app => 
-      app.id === id ? { ...app, status: "rejected" } : app
-    ))
-  }
+    setPreviousStatus((prev) => ({ ...prev, [id]: "pending" }));
+    updateApplicationStatus(id, "rejected");
+  };
+
+  const handleUndo = (id: string) => {
+    updateApplicationStatus(id, "pending");
+  };
 
   return (
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Username</TableHead>
-                <TableHead className="hidden md:table-cell">Message</TableHead>
-                <TableHead>Resume</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {applications.map((application) => (
-                <TableRow key={application.id}>
-                  <TableCell className="font-medium">{application.username}</TableCell>
-                  <TableCell className="hidden md:table-cell max-w-xs truncate">
-                    {application.message}
-                  </TableCell>
-                  <TableCell>
-                    <a
-                      href={application.resumeLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      View Resume
-                    </a>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        application.status === "accepted"
-                          ? "success"
-                          : application.status === "rejected"
-                          ? "destructive"
-                         : application.status === "pending"?"outline":"default"
-
-                      }
-                    >
-                      {application.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
+    <div className="overflow-x-auto">
+      {applications.length === 0 ? (
+        <div className="text-center p-4">No applications found</div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableCell>Username</TableCell>
+              <TableCell>Message</TableCell>
+              <TableCell>Role</TableCell>
+              <TableCell>Applied On</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Resume</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {applications.map((app) => (
+              <TableRow key={app.id}>
+                <TableCell>{app.username}</TableCell>
+                <TableCell>{app.message}</TableCell>
+                <TableCell>{app.role}</TableCell>
+                <TableCell>
+                  {new Date(app.appliedOn).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    className={`${
+                      statusColors[app.status as keyof typeof statusColors] ||
+                      "bg-gray-500"
+                    } hover:bg-gray-700`}
+                  >
+                    {app.status || "Unknown"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <a
+                    href={"./resume/" + app.id}
+                    target="_blank"
+                    className="text-blue-700"
+                  >
+                    View Resume
+                  </a>
+                </TableCell>
+                <TableCell className="flex gap-4">
+                  {app.status === "pending" ? (
+                    <>
                       <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-24"
-                        onClick={() => handleAccept(application.id)}
-                        disabled={application.status !== "pending"}
+                        varient={"icon"}
+                        onClick={() => handleAccept(app.id)}
+                        className="flex items-center gap-2"
+                      >{loading[app.id] ? (
+                        <>
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+                        </>
+                      ):(
+                        <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-5"
                       >
-                        <CheckCircle className="mr-2 h-4 w-4" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="m4.5 12.75 6 6 9-13.5"
+                        />
+                      </svg>
+                      )}
+                       
                         Accept
                       </Button>
                       <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-24"
-                        onClick={() => handleReject(application.id)}
-                        disabled={application.status !== "pending"}
-                      >
-                        <XCircle className="mr-2 h-4 w-4" />
+                        variant={"icon"}
+                        onClick={() => handleReject(app.id)}
+                        className="flex border bg-transparent items-center gap-2"
+                      >{loading[app.id] ? (
+                        <>
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+                        </>
+                      ):(
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="size-5"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M6 18 18 6M6 6l12 12"
+                          />
+                        </svg>
+                      )}
                         Reject
                       </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                    </>
+                  ) : (
+                    <Button
+                      varient={"icon"}
+                      className="flex border bg-transparent text-black items-center gap-2"
+                      onClick={() => handleUndo(app.id)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-4"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="m15 15-6 6m0 0-6-6m6 6V9a6 6 0 0 1 12 0v3"
+                        />
+                      </svg>
+                      Undo
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </div>
+  );
+};
 
-  )
-}
+export default Notifications;

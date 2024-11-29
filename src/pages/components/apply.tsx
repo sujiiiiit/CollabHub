@@ -56,9 +56,10 @@ interface ApplyProps {
     role: string;
     [key: string]: any;
   };
+  createdBy: string;
 }
 
-const Apply: React.FC<ApplyProps> = ({ postId,moreData }) => {
+const Apply: React.FC<ApplyProps> = ({ postId,moreData,createdBy }) => {
   const isAuthenticated = useSelector((state: RootState) => !!state.user.user);
   const [open, setOpen] = useState<boolean>(false);
   const isDesktop = useMediaQuery("(min-width: 600px)");
@@ -110,6 +111,7 @@ const Apply: React.FC<ApplyProps> = ({ postId,moreData }) => {
               className="flex flex-col gap-2"
               postId={postId}
               moreData={moreData}
+              createdBy={createdBy}
             />
           </DialogContent>
         </Dialog>
@@ -133,6 +135,7 @@ const Apply: React.FC<ApplyProps> = ({ postId,moreData }) => {
             className="px-4 flex flex-col gap-2"
             postId={postId}
             moreData={moreData}
+            createdBy={createdBy}
           />
           <DrawerFooter className="pt-2">
             <DrawerClose asChild>
@@ -169,6 +172,7 @@ interface ProfileFormProps {
     role: string;
     [key: string]: any;
   };
+  createdBy: string;
 }
 
 function ProfileForm({
@@ -176,6 +180,7 @@ function ProfileForm({
   open,
   postId,
   moreData,
+  createdBy,
   setOpen,
 }: ProfileFormProps & React.ComponentProps<"form">) {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -198,6 +203,7 @@ function ProfileForm({
           rolePostId: postId+userName,
           username: userName,
           role:moreData["role"],
+          createdBy: createdBy,
         },
         {
           headers: {

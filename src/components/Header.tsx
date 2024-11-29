@@ -76,7 +76,7 @@ const Header: React.FC = () => {
           to="/"
           className="text-[var(--ten)] font-extrabold text-3xl h-full flex items-center"
         >
-          <img src="./assets/logo.svg" className="w-full max-w-32" alt="logo" />
+          <img src="/assets/logo.svg" className="w-full max-w-32" alt="logo" />
         </Link>
         <div
           id="navbar-sticky"

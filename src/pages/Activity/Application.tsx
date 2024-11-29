@@ -14,11 +14,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 type JobApplication = {
-  company: string;
-  role: string;
-  appliedOn: string;
-  rolePostId: string;
-  status: "Pending" | "Interviewed" | "Rejected" | "Offered";
+  rolePostId?: string;
+  role?: string;
+  appliedOn?: string;
+  status?: "Pending" | "Interviewed" | "Rejected" | "Offered";
 };
 
 const statusColors = {
@@ -30,81 +29,108 @@ const statusColors = {
 
 export default function JobApplicationsTable() {
   const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const userId = useSelector((state: RootState) => state.user.user?._id);
-  console.log(jobApplications)
 
-  // Fetch application details based on application IDs
-  const fetchApplicationDetails = async (applicationId:any) => {
+  const fetchApplicationDetails = async (applicationId: string) => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/api/application/${applicationId}`
       );
       return response.data;
-    } catch (error) {
-      console.error(`Failed to fetch details for application ${applicationId}:`, error);
-      return null;
+    } catch (err) {
+      console.error(`Failed to fetch details for application ${applicationId}:`, err);
+      return null; // Handle missing data gracefully
     }
   };
 
   useEffect(() => {
     const fetchApplications = async () => {
+      if (!userId) {
+        setError("User ID is missing. Please log in.");
+        return;
+      }
+
       try {
-        // Fetch user data (including applied IDs)
         const userResponse = await axios.get(
           `${import.meta.env.VITE_SERVER_URL}/api/users/${userId}`
         );
 
-        const appliedIds = userResponse.data.applied || [];
-        
-        // Fetch details for each application ID
+        if (!userResponse.data.applied || !Array.isArray(userResponse.data.applied)) {
+          throw new Error("Applied data is not in the expected format.");
+        }
+
+        const appliedIds = userResponse.data.applied;
+
         const detailedApplications = await Promise.all(
-          appliedIds.map(async (id:any) => {
+          appliedIds.map(async (id: string) => {
             const details = await fetchApplicationDetails(id);
-            return details || {};  // Handle missing data gracefully
+            return details || {}; // Fallback to empty object if data is missing
           })
         );
 
         setJobApplications(detailedApplications);
-      } catch (error) {
-        console.error("Failed to fetch applications:", error);
+      } catch (err: any) {
+        console.error("Failed to fetch applications:", err.message);
+        setError("Failed to fetch applications. Please try again later.");
       }
     };
 
-    if (userId) {
-      fetchApplications();
-    }
+    fetchApplications();
   }, [userId]);
 
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-2xl font-bold mb-4">My Job Applications</h1>
-      <div className="border rounded-lg overflow-hidden">
-        <Table>
-          <TableCaption>A list of your recent job applications</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px]">by</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Date Applied</TableHead>
-              <TableHead className="text-right">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {jobApplications.map((app, index) => (
-              <TableRow key={index}>
-                <TableCell className="font-medium">{app.rolePostId.slice(24) || "N/A"}</TableCell>
-                <TableCell>{app.role || "N/A"}</TableCell>
-                <TableCell>{new Date(app.appliedOn).toLocaleDateString() || "N/A"}</TableCell>
-                <TableCell className="text-right">
-                  <Badge className={`${statusColors[app.status] || "bg-gray-500"} text-white`}>
-                    {app.status || "Unknown"}
-                  </Badge>
-                </TableCell>
+      {error ? (
+        <div className="text-red-500 mb-4">{error}</div>
+      ) : (
+        <div className="border rounded-lg overflow-hidden">
+          <Table>
+            <TableCaption>A list of your recent job applications</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">Role Post ID</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Date Applied</TableHead>
+                <TableHead className="text-right">Status</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {jobApplications.length > 0 ? (
+                jobApplications.map((app, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">
+                      {app.rolePostId ? app.rolePostId.slice(24) : "N/A"}
+                    </TableCell>
+                    <TableCell>{app.role || "N/A"}</TableCell>
+                    <TableCell>
+                      {app.appliedOn
+                        ? new Date(app.appliedOn).toLocaleDateString()
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Badge
+                        className={`${
+                          statusColors[app.status as keyof typeof statusColors] || "bg-gray-500"
+                        } text-white`}
+                      >
+                        {app.status || "Unknown"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-4">
+                    No job applications found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 }
