@@ -7,25 +7,30 @@ import Repos from "@/pages/Repos";
 import Profile from "@/pages/Profile";
 import Search from "@/pages/Search";
 import Activity from "@/pages/Activity/activity";
-import AI from "@/pages/ai/ai"
-import Resume from "@/pages/Activity/Resume"
+import AI from "@/pages/ai/ai";
+import Resume from "@/pages/Activity/Resume";
 import UpdateRole from "@/pages/UpdateRole";
 
 function App() {
   const location = useLocation();
-  const hideHeaderRoutes = ["/resume","/ai"];
+  const hideHeaderRoutes = ["/resume", "/ai"];
 
   return (
     <ScrollArea className="relative w-full h-dvh">
-      {!hideHeaderRoutes.some(route => location.pathname.startsWith(route)) && <Header />}
+      {!hideHeaderRoutes.some((route) =>
+        location.pathname.startsWith(route)
+      ) && <Header />}
 
       <Routes>
         <Route path="/" element={<Search />} />
         <Route path="/activity" element={<AuthRoute component={Activity} />} />
         <Route path="/repo" element={<Repos />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:username" element={<Profile />} />
         <Route path="/create" element={<AuthRoute component={CreateRole} />} />
-        <Route path="/ai/:userName/:repoName" element={<AI />} />
+        <Route
+          path="/ai/:userName/:repoName"
+          element={<AuthRoute component={AI} />}
+        />
         <Route path="/resume/:id" element={<Resume />} />
         <Route path="/update/:id" element={<UpdateRole />} />
       </Routes>

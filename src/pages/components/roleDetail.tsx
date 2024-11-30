@@ -12,6 +12,7 @@ import "@blocknote/mantine/style.css";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Apply from "@/pages/components/apply";
+import { Link } from "react-router-dom";
 
 // Define an interface for the props
 interface RoleDetailProps {
@@ -26,6 +27,7 @@ interface Details {
   techPublic: boolean;
   techStack: string[];
   username: string;
+  repoLink:string;
 }
 
 const RoleDetail: React.FC<RoleDetailProps> = ({ id }) => {
@@ -73,6 +75,9 @@ const RoleDetail: React.FC<RoleDetailProps> = ({ id }) => {
     fetchDescription();
   }, [editor, id]);
 
+  const repoLink = details?.repoLink;
+const shortRepoPath = repoLink?.replace(/^https?:\/\/github\.com\//, '');
+
   return (
     <ScrollArea className="md:h-[calc(100dvh_-_2rem)] h-[calc(100dvh_-_7rem)] justify-between md:border md:mt-2 rounded-[8px] px-5 md:top-4">
       {loading ? (
@@ -114,36 +119,16 @@ const RoleDetail: React.FC<RoleDetailProps> = ({ id }) => {
 
             <div className="md:w-auto sticky w-full flex lg:flex-row  flex-row-reverse top-0 gap-2">
               <span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="bg-muted w-10 h-10 flex justify-center items-center rounded-md">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="28"
-                      height="28"
-                      fill="#000000"
-                      viewBox="0 0 256 256"
-                    >
-                      <path d="M140,128a12,12,0,1,1-12-12A12,12,0,0,1,140,128Zm56-12a12,12,0,1,0,12,12A12,12,0,0,0,196,116ZM60,116a12,12,0,1,0,12,12A12,12,0,0,0,60,116Z"></path>
-                    </svg>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem className="gap-2 ">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        fill="#000000"
-                        viewBox="0 0 256 256"
-                      >
-                        <path d="M42.76,50A8,8,0,0,0,40,56V224a8,8,0,0,0,16,0V179.77c26.79-21.16,49.87-9.75,76.45,3.41,16.4,8.11,34.06,16.85,53,16.85,13.93,0,28.54-4.75,43.82-18a8,8,0,0,0,2.76-6V56A8,8,0,0,0,218.76,50c-28,24.23-51.72,12.49-79.21-1.12C111.07,34.76,78.78,18.79,42.76,50ZM216,172.25c-26.79,21.16-49.87,9.74-76.45-3.41-25-12.35-52.81-26.13-83.55-8.4V59.79c26.79-21.16,49.87-9.75,76.45,3.4,25,12.35,52.82,26.13,83.55,8.4Z"></path>
-                      </svg>
-                      <span>Report</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {details && (
+                  <Link to={`/ai/${shortRepoPath}`}>
+                    <Button size={"icon"} variant={"secondary"}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#000000" viewBox="0 0 256 256"><path d="M208.31,75.68A59.78,59.78,0,0,0,202.93,28,8,8,0,0,0,196,24a59.75,59.75,0,0,0-48,24H124A59.75,59.75,0,0,0,76,24a8,8,0,0,0-6.93,4,59.78,59.78,0,0,0-5.38,47.68A58.14,58.14,0,0,0,56,104v8a56.06,56.06,0,0,0,48.44,55.47A39.8,39.8,0,0,0,96,192v8H72a24,24,0,0,1-24-24A40,40,0,0,0,8,136a8,8,0,0,0,0,16,24,24,0,0,1,24,24,40,40,0,0,0,40,40H96v16a8,8,0,0,0,16,0V192a24,24,0,0,1,48,0v40a8,8,0,0,0,16,0V192a39.8,39.8,0,0,0-8.44-24.53A56.06,56.06,0,0,0,216,112v-8A58.14,58.14,0,0,0,208.31,75.68ZM200,112a40,40,0,0,1-40,40H112a40,40,0,0,1-40-40v-8a41.74,41.74,0,0,1,6.9-22.48A8,8,0,0,0,80,73.83a43.81,43.81,0,0,1,.79-33.58,43.88,43.88,0,0,1,32.32,20.06A8,8,0,0,0,119.82,64h32.35a8,8,0,0,0,6.74-3.69,43.87,43.87,0,0,1,32.32-20.06A43.81,43.81,0,0,1,192,73.83a8.09,8.09,0,0,0,1,7.65A41.72,41.72,0,0,1,200,104Z"></path></svg>
+                    </Button>
+                  </Link>
+                )}
               </span>
 
-              <Button className="bg-muted" size={"icon"} variant={"ghost"}>
+              {/* <Button className="bg-muted" size={"icon"} variant={"ghost"}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="28"
@@ -153,7 +138,7 @@ const RoleDetail: React.FC<RoleDetailProps> = ({ id }) => {
                 >
                   <path d="M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Zm0,177.57-51.77-32.35a8,8,0,0,0-8.48,0L72,209.57V48H184Z"></path>
                 </svg>
-              </Button>
+              </Button> */}
               <Apply createdBy= {username} postId={id} moreData={details ? { ...details, role: details.roles.join(", ") } : { role: "" }} />
             </div>
           </div>

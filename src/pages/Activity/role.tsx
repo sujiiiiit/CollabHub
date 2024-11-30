@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, MoreHorizontal, Plus } from "lucide-react";
 import { RootState } from "@/lib/store";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 
 
@@ -54,9 +54,11 @@ export default function Component() {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Job Roles Dashboard</h1>
+        <Link to={"/create"}>
         <Button>
           <Plus className="mr-2 h-4 w-4" /> Create New Role
         </Button>
+        </Link>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">

@@ -115,7 +115,7 @@ const Header: React.FC = () => {
               <DropdownMenuContent>
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <Link to={"/profile"}>
+                <Link to={`/profile/${user.username}`}>
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                 </Link>
                 <DropdownMenuItem>Billing</DropdownMenuItem>

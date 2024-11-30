@@ -49,7 +49,6 @@ const formSchema = z.object({
   resume: z.instanceof(FileList),
 });
 
-
 interface ApplyProps {
   postId: string;
   moreData: {
@@ -59,7 +58,7 @@ interface ApplyProps {
   createdBy: string;
 }
 
-const Apply: React.FC<ApplyProps> = ({ postId,moreData,createdBy }) => {
+const Apply: React.FC<ApplyProps> = ({ postId, moreData, createdBy }) => {
   const isAuthenticated = useSelector((state: RootState) => !!state.user.user);
   const [open, setOpen] = useState<boolean>(false);
   const isDesktop = useMediaQuery("(min-width: 600px)");
@@ -68,18 +67,17 @@ const Apply: React.FC<ApplyProps> = ({ postId,moreData,createdBy }) => {
   );
   const [isApplied, setIsApplied] = useState<boolean>(false);
 
-
   useEffect(() => {
     const checkApplicationStatus = async () => {
       if (!userName) return;
-      
+
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL}/api/application/check/${userName}/${postId+userName}`
+          `${import.meta.env.VITE_SERVER_URL}/api/application/check/${userName}/${postId + userName}`
         );
-        if(response){
+        if (response) {
           setIsApplied(response.data.applied);
-          console.log(response.data.applied)
+          console.log(response.data.applied);
         }
       } catch (error) {
         console.error("Failed to check application status:", error);
@@ -89,16 +87,19 @@ const Apply: React.FC<ApplyProps> = ({ postId,moreData,createdBy }) => {
     checkApplicationStatus();
   }, [userName]);
 
+  const isSameUser = userName === createdBy;
+
   if (isAuthenticated) {
     if (isDesktop) {
       return (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button
-              disabled={isApplied}
+              disabled={isApplied || isSameUser}
               className="bg-primary lg:w-auto w-[calc(100%_-_16px)] text-black hover:border-black hover:border hover:outline-none hover:shadow-[4px_4px_0_0_#000] hover:transform hover:translate-x-[-4px] hover:translate-y-[-4px] mx-2 "
             >
-              {isApplied ? "Applied" : "Collaborate Now"}
+              {isApplied  ? "Applied" : "Collaborate Now"}
+             
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:rounded-none">
@@ -121,8 +122,11 @@ const Apply: React.FC<ApplyProps> = ({ postId,moreData,createdBy }) => {
     return (
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild>
-          <Button className="bg-primary lg:w-auto w-[calc(100%_-_16px)] text-black hover:border-black hover:border hover:outline-none hover:shadow-[4px_4px_0_0_#000] hover:transform hover:translate-x-[-4px] hover:translate-y-[-4px] mx-2">
-            Collaborate Now
+          <Button
+            disabled={isApplied || isSameUser}
+            className="bg-primary lg:w-auto w-[calc(100%_-_16px)] text-black hover:border-black hover:border hover:outline-none hover:shadow-[4px_4px_0_0_#000] hover:transform hover:translate-x-[-4px] hover:translate-y-[-4px] mx-2"
+          >
+            {isApplied || isSameUser ? "Applied" : "Collaborate Now"}
           </Button>
         </DrawerTrigger>
         <DrawerContent>
@@ -161,7 +165,7 @@ const Apply: React.FC<ApplyProps> = ({ postId,moreData,createdBy }) => {
       </TooltipProvider>
     );
   }
-}
+};
 
 interface ProfileFormProps {
   className?: string;
@@ -200,9 +204,9 @@ function ProfileForm({
           ...values,
           message: values.message,
           resume: values.resume[0],
-          rolePostId: postId+userName,
+          rolePostId: postId + userName,
           username: userName,
-          role:moreData["role"],
+          role: moreData["role"],
           createdBy: createdBy,
         },
         {
@@ -268,6 +272,5 @@ function ProfileForm({
     </Form>
   );
 }
-
 
 export default Apply;
